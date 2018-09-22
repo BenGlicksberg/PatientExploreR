@@ -804,62 +804,6 @@ server <- function(input, output,session) {
   ###### INITIALIZATION ######
   ############################
 
-  ### general query function ###
-  sqlQuery <- function(query) {
-
-    if (input$driver_picker=="MySQL") {
-
-      # creating connection object
-      drv <- dbDriver("MySQL")
-      fullConnectString <- setConnectFunction(input$sqlid, input$sqlpass, input$sqlhost, input$sqldb, input$sqlport)
-      con <- eval(parse(text = fullConnectString))
-
-      # close db connection after function
-      on.exit(DBI::dbDisconnect(con))
-
-      # send query
-      res <-DBI::dbSendQuery(con, query)
-
-      # get elements from results
-      result <- DBI::fetch(res, -1)
-
-    } else {
-    if (input$driver_picker == "PostgreSQL") {
-      drv <- "postgresql"
-    } else if (input$driver_picker == "Oracle") {
-      drv <- "oracle"
-    } else if (input$driver_picker == "Amazon Redshift") {
-      drv <- "redshift"
-    } else if (input$driver_picker == "Microsoft SQL Server") {
-      drv <- "sql server"
-    } else if (input$driver_picker == "Microsoft Parallel Datawarehouse") {
-      drv <- "pdw"
-    } else if (input$driver_picker == "Google BigQuery") {
-      drv <- "bigquery"
-    }
-
-      # creating connection object using DatabaseConnector
-      con <- DatabaseConnector::connect(dbms = drv,
-                                        server = input$sqlhost,
-                                        user = input$sqlid,
-                                        password = input$sqlpass,
-                                        schema = input$sqldb)
-
-      # close db connection after function
-      on.exit(DatabaseConnector::disconnect(con))
-
-      # translate query using SqlRender
-      translated_query <- SqlRender::translateSql(query, targetDialect = drv)$sql
-
-      # query using DatabaseConnector function
-      result <- DatabaseConnector::querySql(con, translated_query)
-
-      # coerce columns to lowercase
-      colnames(result) <- tolower(colnames(result))
-    }
-    return(result)
-  }
-
 
   enable_tabs <- function(){
     shinyjs::show("dashboard_open", anim = TRUE)
