@@ -770,9 +770,7 @@ ui <- fluidPage(
 
 server <- function(input, output,session) {
 
-if (!interactive()) sink(stderr(), type = "output")  ## *** needed?
-source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
-
+  if (!interactive()) sink(stderr(), type = "output")  ## *** needed?
 
   ############################
   ######### VARIABLES ########

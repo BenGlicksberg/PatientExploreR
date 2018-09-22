@@ -11,6 +11,7 @@ library(plotly)
 library(timevis)
 library(stringr)
 library(dplyr)
+library(data.table)
 
 
 options("currentPath" = paste0(getwd(),'/'))
