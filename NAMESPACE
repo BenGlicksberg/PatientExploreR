@@ -2,4 +2,5 @@
 
 export(directoryInput)
 export(readDirectoryInput)
+export(runPatientExploreRApp)
 export(updateDirectoryInput)
