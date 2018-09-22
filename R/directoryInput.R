@@ -105,6 +105,7 @@ if (Sys.info()['sysname'] == 'Darwin') {
 #' @return
 #' A directory input control that can be added to a UI definition.
 #'
+#' @export
 #' @seealso
 #' \link{updateDirectoryInput}, \link{readDirectoryInput}, \link[utils]{choose.dir}
 directoryInput = function(inputId, label, value = NULL) {
@@ -168,6 +169,7 @@ directoryInput = function(inputId, label, value = NULL) {
 #' in the text-field and triggers a client-side change event.  A directory
 #' selection dialog is not displayed.
 #'
+#' @export
 updateDirectoryInput = function(session, inputId, value = NULL, ...) {
   if (is.null(value)) {
     value = choose.dir(...)
@@ -184,6 +186,7 @@ updateDirectoryInput = function(session, inputId, value = NULL, ...) {
 #' Reads the value of the text field associated with a \code{directoryInput}
 #' object that stores the user selected directory path.
 #'
+#' @export
 readDirectoryInput = function(session, inputId) {
   session$input[[sprintf('%s__chosen_dir', inputId)]]
 }
