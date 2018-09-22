@@ -1,9 +1,11 @@
 Package: PatientExploreR
-Title: What the Package Does (one line, title case)
+Title: Explore Patient and Cohort Medical Record Data.
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R: person("Glicksberg", "Ben", email = "neb255@gmail.com", role = c("aut", "cre"))
+Description: Provides a user interface over standardized medical record databases.
+  Users can select individual patients or cohorts of patients meeting inclusion criteria.
 Depends: R (>= 3.4.4)
+Imports: DBI, odbc, RMySQL, shiny, shinyWidgets, shinyjs, shinyalert, shinythemes, plotly, timevis, stringr, dplyr, data.table
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
