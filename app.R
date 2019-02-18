@@ -863,7 +863,8 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
                                         server = input$sqlhost,
                                         user = input$sqlid,
                                         password = input$sqlpass,
-                                        schema = input$sqldb)
+                                        schema = input$sqldb,
+				        port = input$port)
       
       # close db connection after function
       on.exit(DatabaseConnector::disconnect(con))
