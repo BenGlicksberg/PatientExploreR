@@ -44,7 +44,8 @@ checkOMOPconnection <- function(driver, username, password, host, dbname, port) 
                                           server = host,
                                           user = username,
                                           password = password,
-                                          schema = dbname)
+                                          schema = dbname,
+                        		  port = port)
         
       }
     },
@@ -88,7 +89,8 @@ checkOMOPtables <- function(driver, username, password, host, dbname, port) {
                                       server = host,
                                       user = username,
                                       password = password,
-                                      schema = dbname)
+                                      schema = dbname,
+                        	      port = port)
 }
   
   foundTablesData <- tolower(dbListTables(con))
