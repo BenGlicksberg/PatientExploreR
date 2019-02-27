@@ -11,6 +11,7 @@ library(shinyWidgets)
 library(shinyjs)
 library(shinyalert)
 library(shinythemes)
+library(shinycssloaders)
 library(plotly)
 library(timevis)
 library(stringr)
@@ -694,7 +695,6 @@ ui <- fluidPage(
                                                           )
                                                         )
                                                       ) #end fluidPage
-                                    
                                                         ), #end Report help tab
                                              tabPanel("Encounter Timeline",
                                                       tags$br(),
@@ -783,11 +783,8 @@ ui <- fluidPage(
                                         Full instructions on these connection parameters can be found from the OHDSI consortium's <a href= 'https://github.com/OHDSI/DatabaseConnector'> Database Connector <\a> GitHub page.")
                         )
              )
-  ) # end NavbarPage
- 
+    ) # end NavbarPage
 ) # end UI
-
-
 
 
 ##############################################################
@@ -796,7 +793,7 @@ ui <- fluidPage(
 
 server <- function(input, output,session) {
 
-if (!interactive()) sink(stderr(), type = "output")  ## *** needed?
+if (!interactive()) sink(stderr(), type = "output") 
   
   
   ############################
@@ -950,7 +947,6 @@ if (!interactive()) sink(stderr(), type = "output")  ## *** needed?
       library("SqlRender")
     }
   
-    
     connection <- checkOMOPconnection(driver, username,password,host,dbname, port)
    
  if(connection==TRUE){ ### if connection can be made
@@ -1264,7 +1260,6 @@ if (!interactive()) sink(stderr(), type = "output")  ## *** needed?
   observeEvent(input$gotoExplorer, {
     updateTabsetPanel(session=session,"inTabset",selected = "Data Explorer")
   })
-  
 
   
   ############################
@@ -1612,7 +1607,8 @@ if (!interactive()) sink(stderr(), type = "output")  ## *** needed?
       shinyjs::hidden(
         div(id="finder_plots",
       fluidRow(
-        plotlyOutput("cohort_plots")
+        plotlyOutput("cohort_plots") %>% withSpinner()
+        # credit: https://github.com/andrewsali/shinycssloaders
       )
         )),
       fluidRow(
@@ -1752,7 +1748,6 @@ enable_after_search <-function(){
 
     subplot(p0,p1, p2,p3, p4, nrows = 1, margin = 0.02, widths = c(0.3,0.15, 0.3, 0.15, 0.1)) %>% hide_legend() %>% layout(margin = list(b = 200,l=20))
 
-
   })
 
 
@@ -1795,8 +1790,7 @@ enable_after_search <-function(){
               options = list(
                 columnDefs = list(list(targets=7, searchable = FALSE))
               )
-    )
-
+        )
   })
 
   
@@ -2188,10 +2182,7 @@ enable_after_search <-function(){
     fluidRow(
       hr()
     )
-
-
      )# end fluidPage
-
   })
   
 
@@ -2263,7 +2254,7 @@ output$timeline_title <- renderText({
     tl_id <- input$encounter_timeline_selected
     timevis_encounters = encounter_timeline_data()
 
-	tl_id = as.integer(tl_id)
+	  tl_id = as.integer(tl_id)
 
     timevis_encounters$id = 1:nrow(timevis_encounters)
   
@@ -2387,7 +2378,7 @@ output$timeline_title <- renderText({
     req(logged_in()==TRUE & !is.null(pt_id_selected()))
 
     if(input$encounter_plot_type != "no_enc_selected"){
-       plotlyOutput("plotly_pt_encounter_data")
+       plotlyOutput("plotly_pt_encounter_data") %>% withSpinner()
     }
 
   })
@@ -2539,13 +2530,11 @@ output$timeline_title <- renderText({
                              DT::dataTableOutput("observations_explorer_table")) 
                 ) # end tabset Panel
         
-        
       ), #end fluidRow
       
       hr(),
-      #
-      uiOutput("timevispanel")
       
+      uiOutput("timevispanel")
       
       ) # end fluidPage
       
@@ -3153,8 +3142,6 @@ output$timeline_title <- renderText({
     
   })
   
-
-  
   ### devices targeted
   output$devices_explorer_targeted_panel <- renderUI({
     
@@ -3294,19 +3281,16 @@ output$timeline_title <- renderText({
       
     )
     
-    
   })
   
   
   ################################################################ TARGETED DATA EXPLORER numeric visualization
   
-  
   output$timevispanel <- renderUI({
     if(input$dataset_type_targeted_explorer %in% c("Measurements","Observations")){
-      plotlyOutput('timevisnumeric', height = "400px")
+      plotlyOutput('timevisnumeric', height = "400px") %>% withSpinner()
     }
   })
-  
   
   
   output$timevisnumeric <- renderPlotly({
@@ -3501,13 +3485,13 @@ output$multiplot_panel <- renderUI({ ##
  multiplex_selected <-c(input$conditions_explorer_multiplex,input$medications_explorer_multiplex,input$procedures_explorer_multiplex ,input$measurements_explorer_multiplex,input$devices_explorer_multiplex,input$observations_explorer_multiplex)
 
   if(length(multiplex_selected)==1){
-    plotlyOutput('multiplot', height = "400px")
+    plotlyOutput('multiplot', height = "400px") %>% withSpinner()
   }else if(length(multiplex_selected)==2){
-    plotlyOutput('multiplot', height = "500px")
+    plotlyOutput('multiplot', height = "500px") %>% withSpinner()
   }else if(length(multiplex_selected)==3) {
-    plotlyOutput('multiplot', height = "800px")
+    plotlyOutput('multiplot', height = "800px") %>% withSpinner()
   }else if(length(multiplex_selected)>3) {
-    plotlyOutput('multiplot', height = "1000px")
+    plotlyOutput('multiplot', height = "1000px") %>% withSpinner()
   }
 
 })
