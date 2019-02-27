@@ -756,12 +756,12 @@ ui <- fluidPage(
                                  p(HTML("<a href = 'https://github.com/BenGlicksberg/PatientExploreR'> GitHub Repository </a>")),
                                  tags$br(),
                                  tags$h5("Requirements"),
-                                 tags$p("TBD"),
                                  tags$ul(
                                    tags$li("Personal Computer or Server with connection to internet"),
                                    tags$li("R"),
                                    tags$li("All required packages (see Install.R)"),
-                                   tags$li("Database software (either: MySQL, PostgreSQL, ")
+                                   tags$li("Database software (either: MySQL, PostgreSQL, Amazon Redshift, Microsoft SQL Server, Microsoft Parallel Data Warehouse, Google BigQuery"),
+                                   tags$li("Access to Electronic Health Record data (reccommended for use with a de-identified version) that is properly formatted to OMOP Common Data Model v5")
                                  ),
                                  tags$h5("Installation"),
                                  tags$ol(
@@ -772,8 +772,15 @@ ui <- fluidPage(
                                    ),
                                  tags$br(),
                                  tags$h6("Storing credentials"),
-                                 tags$p("")
-                                 
+                                 HTML("For quick connection, users can quickly load and save their credentials to connect to EHR database within an R environment file (.Renviron). Either this file can be created after the credentials are entered in the input fields (Save Credentials button) which will automatically create this file in the directory of interest. Alternatively, users can create an .Renviron file the project directory in the following format:<br>
+                                        driver = ' ' <br>
+                                        host = ' ' <br>
+                                        username= ' ' <br>
+                                        password = ' ' <br>
+                                        dbname = ' ' <br>
+                                        port = ' '<br>
+                                        <br>
+                                        Full instructions on these connection parameters can be found from the OHDSI consortium's <a href= 'https://github.com/OHDSI/DatabaseConnector'> Database Connector <\a> GitHub page.")
                         )
              )
   ) # end NavbarPage
