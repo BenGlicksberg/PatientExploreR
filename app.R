@@ -743,7 +743,7 @@ ui <- fluidPage(
                                  p(HTML("The Centers for Medicare and Medicaid Services (CMS) have released a synthetic clinical dataset <a href='https://www.cms.gov/Research-Statistics-Data-and-Systems/Downloadable-Public-Use-Files/SynPUFs/DE_Syn_PUF.html'>DE-SynPUF</a> in the public domain with the aim of being reflective of the patient population but containing no protected health information. The OHDSI group has underwent the task of converting these data into the <a href='https://github.com/OHDSI/ETL-CMS'>OMOP CDM format </a>. Users are certainly able to set up this configuration on their own system following the instructions on the GitHub page. We obtained all data files from the <a href='ftp://ftp.ohdsi.org/synpuf'> OHDSI FTP server</a> (accessed June 17th, 2018) and created the CDM (DDL and indexes) according to their  <a href = 'https://github.com/OHDSI/CommonDataModel/tree/master/PostgreSQL'>official instructions</a>, but modified for MySQL. For space considerations, we only uploaded one million rows of each of the data files. The sandbox server is a Rshiny server running as an Elastic Compute Cloud (EC2) instance on Amazon Web Services (AWS) querying a MySQL database server (AWS Aurora MySQL). ")),
                                  tags$br(),
                                  tags$h6("Example Patient"),
-                                 p(HTML("As the DE-SynPUF data does not contain patient measurement results, we generated a profile for a patient with Chron's Disease with representative clinical data (e.g., disease codes and lab test results) for illustrative purposes. Users can recreate this example patient using the script <a href = ''> found here </a>. The script is formatted for a MySQL database.")),
+                                 p(HTML("As the DE-SynPUF data does not contain patient measurement results, we generated a profile for a patient with Chron's Disease with representative clinical data (e.g., disease codes and lab test results) for illustrative purposes. Users can recreate this example patient using the script <a href = 'https://github.com/BenGlicksberg/PatientExploreR/blob/dev/data/new_pt_insert_commands.txt'> found here </a>. The script is formatted for a MySQL database.")),
                                  tags$h5("Who We Are"),
                                  p(HTML("PatientExploreR was created by Benjamin Glicksberg (ben.glicksberg@gmail.com) while working as a post-doctoral scholar in the lab of <a href = 'http://buttelab.ucsf.edu/'> Dr. Atul Butte </a> at UCSF within the <a href = 'http://bakarinstitute.ucsf.edu/'>Bakar Computaitonal Health Sciences Institute </a>. This project was a collaboration between many individuals (see Manuscript Information) from UCSF, Columbia University, and the Icahn School of Medicine at Mount Sinai.")),
                                  tags$hr()
@@ -757,14 +757,27 @@ ui <- fluidPage(
                                  tags$br(),
                                  tags$h5("Requirements"),
                                  tags$p("TBD"),
-                                 tags$br(),
+                                 tags$ul(
+                                   tags$li("Personal Computer or Server with connection to internet"),
+                                   tags$li("R"),
+                                   tags$li("All required packages (see Install.R)"),
+                                   tags$li("Database software (either: MySQL, PostgreSQL, ")
+                                 ),
                                  tags$h5("Installation"),
-                                 tags$p("TBD"),
-                                 tags$br()
+                                 tags$ol(
+                                   tags$li("Download app from GitHub (see Source Files)"),
+                                   tags$li("Navigate to diretory and run Install.R (Rscript Install.R) to install all required packages"),
+                                   tags$li("(Optional) Create .Renviron file in directory with database credentials (Note: this can be done in the app itself). See section below for formatting this file."),
+                                   tags$li("Open app using either Rstudio (Run App) or from command line: R -e \"shiny::runApp('PatientExploreR.R')\", then navigate to the IP address after \"Listening on…\" using a web browser.")
+                                   ),
+                                 tags$br(),
+                                 tags$h6("Storing credentials"),
+                                 tags$p("")
+                                 
                         )
              )
   ) # end NavbarPage
-
+ 
 ) # end UI
 
 
