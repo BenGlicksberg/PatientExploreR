@@ -18,6 +18,7 @@ library(dplyr)
 
 
 options("currentPath" = paste0(getwd(),'/'))
+source("global.R")
 
 ### this will not be in the main package as wd will be set by button
 #options("currentPath" = "/srv/shiny-server/patientexplorer/")
@@ -29,6 +30,7 @@ options("currentPath" = paste0(getwd(),'/'))
 ##############################################################
 
 ui <- fluidPage(
+  #### sets page style
   tags$head(
     tags$style(
       HTML(
@@ -47,42 +49,37 @@ ui <- fluidPage(
          )
       )
       ),
-  navbarPage("PatientExploreR",id="inTabset",
-             tabPanel("Home", ### BEGIN Home
-            style = "width:100%; margin-left:250px; margin-right:200px",
+  navbarPage("PatientExploreR",id="inTabset", ### Navigation bar
+             #### HOME tab
+             tabPanel("Home",
+                  style = "width:100%; margin-left:250px; margin-right:200px",
                       mainPanel(align="center",
                                 useShinyjs(),
                                 useShinyalert(),
                                 fluidPage(theme = shinytheme("paper"),
-                                          fluidRow(tags$h3("PatientExploreR Sandbox Server"),
+                                          fluidRow( # intro fluidRow
+                                                   tags$h3("PatientExploreR Sandbox Server"),
                                                    tags$p("PatientExploreR interfaces with a relational database of EHR data in the Observational Medical Outcomes Partnership (OMOP) Common Data Model (CDM). This application produces patient-level interactive and dynamic reports and visualization of clinical data, without requiring programming skills.",align="left"),
                                                    HTML(paste0(h5("All patient data are synthesized and contain ", tags$b("no Protected Health Information")))),
                                                    tags$br(),
                                                    fluidRow(
-                                            column(width=4,
-                                                   actionButton("gotoHelp","",icon=icon("question-circle","fa-5x"),lib="font-awesome"),
-                                                   fluidRow(tags$h5("Help"))
-                                                   )
-                                            ,
-                                            column(width=4,
-                                                   actionButton("gotoAbout","",icon=icon("info-circle","fa-5x"),lib="font-awesome"),
-                                                   fluidRow(tags$h5("About"))
-                                            )
-                                            ,
-                                            column(width=4,
-                                                   actionButton("gotoDownloadApp","",icon=icon("download","fa-5x"),lib="font-awesome"),
-                                                   fluidRow(tags$h5("Download App"))
-                                            )
-                                            ),         
+                                                      column(width=4, # Help button
+                                                        actionButton("gotoHelp","",icon=icon("question-circle","fa-5x"),lib="font-awesome"),
+                                                        fluidRow(tags$h5("Help"))),
+                                                      column(width=4, # About button
+                                                        actionButton("gotoAbout","",icon=icon("info-circle","fa-5x"),lib="font-awesome"),
+                                                        fluidRow(tags$h5("About"))),
+                                                      column(width=4, #Download App button
+                                                        actionButton("gotoDownloadApp","",icon=icon("download","fa-5x"),lib="font-awesome"),
+                                                        fluidRow(tags$h5("Download App")))),         
                                                    tags$br(),
-						
-                                            HTML(paste0(h5("To begin: click ",  tags$u(tags$b("Load Credentials")), "then", tags$u(tags$b("Login"))))),
-
+                                                   HTML(paste0(h5("To begin: click ",  tags$u(tags$b("Load Credentials")), "then", tags$u(tags$b("Login"))))),
                                                    tags$hr()
-                                          ), #end fluidRow
+                                          ), # end intro fluidRow
                                           fluidRow(
                                             column(width=5, # Login column
                                                    tags$h4("Please log-in below:"),
+                                                   # Credentials section 
                                                    textInput(inputId="sqlid", label="User ID", value = "", width = NULL, placeholder = "User ID"),
                                                    passwordInput(inputId="sqlpass", label="Password", value = "", width = NULL,placeholder = NULL),
                                                    textInput(inputId="sqlhost", label="Host", value = "", width = NULL, placeholder = "Host"),
@@ -97,10 +94,10 @@ ui <- fluidPage(
                                                    textInput(inputId="sqlport", label="Port", value = "", width = NULL, placeholder = "Port"),
                                                    
                                                   fluidRow(column(width=6,
-                                                                 disabled(actionButton(width = 150,
-                                                                              inputId = "save_crednetials",
+                                                                 actionButton(width = 150,
+                                                                              inputId = "save_credentials",
                                                                               label = "Save Credentials"
-                                                                 ))
+                                                                 )
                                                   ),
                                                   column(width=6,
                                                          actionButton(width =150,
@@ -111,7 +108,8 @@ ui <- fluidPage(
                                                   ),HTML("<br>"),
                                                   fluidRow(
                                                     column(width=12,
-                                                  disabled(directoryInput('directory', label = "", value = getOption("currentPath")))
+                                                 directoryInput('directory', label = "", value = getOption("currentPath"))
+                                                 # credit: https://github.com/wleepang/shiny-directory-input
                                                     )
                                                   ),  
                                                   HTML("<br>"),
@@ -298,7 +296,6 @@ ui <- fluidPage(
                 shinyjs::hidden ( 
                   div(id="pts_found_open",       
                       fluidRow(
-                        hr(),
                         uiOutput("pts_found_display")
                       )
                   ))    # end pts_found shinyjs:hidden
@@ -864,7 +861,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
                                         user = input$sqlid,
                                         password = input$sqlpass,
                                         schema = input$sqldb,
-				        port = input$port)
+				                                port = input$sqlport)
       
       # close db connection after function
       on.exit(DatabaseConnector::disconnect(con))
@@ -924,6 +921,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     disable("driver_picker")
     disable("sqlport")
     disable("load_credentials")
+    disable("save_credentials")
     
     username <- input$sqlid
     password <- input$sqlpass
@@ -1015,6 +1013,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
         )
         shinyjs::enable("login")
         enable("load_credentials")
+        enable("save_credentials")
         enable("sqlid")
         enable("sqlpass")
         enable("sqlhost")
@@ -1041,6 +1040,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
       )
       shinyjs::enable("login")
       enable("load_credentials")
+      enable("save_credentials")
       enable("sqlid")
       enable("sqlpass")
       enable("sqlhost")
@@ -1083,6 +1083,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     enable("sqlport")
     
     enable("load_credentials")
+    enable("save_credentials")
     
     click("reset_filter")
     pt_id_selected(NULL)
@@ -1097,7 +1098,6 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
   
   
   ### LOAD CREDENTIALS
-
   observeEvent(input$load_credentials, {
     # check if .Renviron exists in current directory
     if (file.exists(paste0(getOption("currentPath"),".Renviron"))){
@@ -1131,8 +1131,55 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
   })    
     
   ### SAVE CREDENTIALS
-  #TBD  
+  observeEvent(input$save_credentials, {
+    #credit: https://github.com/daattali/shinyalert
+    shinyalert(
+      title = "Save Credentials?",
+      text = "Warning: this will create or overwrite the .Renviron file in current directory. Proceed?",
+      closeOnEsc = TRUE,
+      closeOnClickOutside = FALSE,
+      html = FALSE,
+      type = "warning",
+      showConfirmButton = TRUE,
+      showCancelButton = TRUE,
+      confirmButtonText = "OK",
+      confirmButtonCol = "#AEDEF4",
+      cancelButtonText = "Cancel",
+      timer = 0,
+      imageUrl = "",
+      animation = TRUE,
+      callbackR = function(x) { 
+        if (x==TRUE) {
+          # SAVE CREDENTIALS if OK is selected for Warning shinyalert
+          if (input$driver_picker=="MySQL") {
+            drv <- "mysql"
+          } else if (input$driver_picker == "PostgreSQL") {
+            drv <- "postgresql"
+          } else if (input$driver_picker == "Oracle") {
+            drv <- "oracle"
+          } else if (input$driver_picker == "Amazon Redshift") {
+            drv <- "redshift"
+          } else if (input$driver_picker == "Microsoft SQL Server") {
+            drv <- "sql server"
+          } else if (input$driver_picker == "Microsoft Parallel Datawarehouse") {
+            drv <- "pdw"
+          } else if (input$driver_picker == "Google BigQuery") { 
+            drv <- "bigquery"
+          }  
+            write(paste0("driver = '", drv, "'\n",
+                         "host = '", input$sqlhost, "'\n",
+                         "username = '", input$sqlid, "'\n",
+                         "password = '", input$sqlpass, "'\n",
+                         "dbname = '", input$sqldb, "'\n",
+                         "port = '", input$sqlport, "'\n"),
+                  file = paste0(getOption("currentPath"),".Renviron"))
+              } 
+        
+        }
+    )
+  })
 
+  
   ## shiny-directory-input
   # https://github.com/wleepang/shiny-directory-input
   observeEvent(
@@ -1167,16 +1214,13 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     
   output$intro_help<-renderUI({
     fluidPage(
-      
-  icon("question-circle","fa-2x"),"First time user? Check out the ",
-  actionLink("gotoHelp2","Help"), "page or start the ", actionLink("gotoTutorial","Tutorial")
+      icon("question-circle","fa-2x"),"First time user? Check out the ",
+      actionLink("gotoHelp2","Help"), "page."
     )
   })
   
   
-  
   ##### HOME BUTTONS
-  
   observeEvent(input$gotoAbout, {
     updateTabsetPanel(session=session,"inTabset",selected = "About")
   })
@@ -1318,9 +1362,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
 
 
   # select all terms for mode/vocab selection
-
   observeEvent(input$criteria_select_all_button_finder,{
-
     rows_sel = input$finder_term_picker_rows_all
     toaddstrings<-paste(finder_term_table$df[rows_sel,]$vocabulary_id,finder_term_table$df[rows_sel,]$concept_code,sep=":")
     newaddstrings<- setdiff(toaddstrings, vocab_term$l)
@@ -1333,10 +1375,9 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
       tmp_vf_tbl = data.table(vocabulary = vocabularies_split, term = codes_split)
       selected_finder_term_table$df = rbind(selected_finder_term_table$df, tmp_vf_tbl)
     }
-    
-    
   })
 
+  # remove all terms for mode/vocab selection
   observeEvent(input$criteria_select_none_button_finder,{
     rows_sel = input$finder_term_picker_rows_all
     toremovestrings<-paste(finder_term_table$df[rows_sel,]$vocabulary_id,finder_term_table$df[rows_sel,]$concept_code,sep=":")
@@ -1378,7 +1419,6 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
 
       if(sel_selected() == TRUE){
         enable("criteria_remove_button")
-
       }else{
         disable("criteria_remove_button")
       }
@@ -1489,7 +1529,6 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
      pts_search_found$ethnicities <- unique(pts_demographics[person_id %in% patient_list]$Ethnicity)
      pts_search_found$ages <- c(min(pts_demographics[person_id %in% patient_list]$age),max(pts_demographics[person_id %in% patient_list]$age))
      
-   # 
    shinyjs::hide("criteria_search_open")
    shinyjs::show("pts_found_open")
      }else{
@@ -1525,9 +1564,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     shinyjs::hide("pts_found_open")
     shinyjs::show("criteria_search_open") 
 
-
-
-    
+   
     vocab_term$l <- list()
   pts_search_found <-reactiveValues(pt_list = list(),genders=list(),races=list(),statuses=list(),ethnicities=list(),ages=list())
   selected_finder_term_table$df <- data.table(vocabulary = character(),term = character())
@@ -1539,9 +1576,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
 
     updatePickerInput(session, inputId = "finder_domain_picker",selected = "Condition")
 
-  # 
   })
-
 
    
   output$pts_found_display<-renderUI({ ### change renderUI to cohort_found ranges
@@ -1551,151 +1586,32 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     single_races = single_races[!grepl(",",single_races)]
 
     fluidPage(
-      fluidRow(tags$h4("Filter Cohort:")),
-      fluidRow(
-          column(3,
-                 sliderInput("slider_age", label = "Age", min = pts_search_found$ages[1],
-                             max = pts_search_found$ages[2], value = c(pts_search_found$ages[1], pts_search_found$ages[2]))
-          ),
-          column(2,
-                 pickerInput(
-                   inputId = "GenderFilter",
-                   label = "Gender",
-                   choices = sort(pts_search_found$genders),
-                   selected = sort(pts_search_found$genders),
-                   options = list(
-                     size = 25,
-                     `selected-text-format` = "count > 1"
-                   ),
-                   multiple = TRUE
-                 ) # End GenderFilter
-          ),
-          column(2,
-                 pickerInput(
-                   inputId = "StatusFilter",
-                   label = "Status",
-                   choices = sort(pts_search_found$statuses),
-                   selected = sort(pts_search_found$statuses),
-                   options = list(
-                     size = 25,
-                     `selected-text-format` = "count > 1"
-                   ),
-                   multiple = TRUE
-                 ) # End StatusFilter
-          ),
-          column(3,
-                 pickerInput(
-                   inputId = "RaceFilter",
-                   label = "Race",
-                   choices = sort(pts_search_found$races),
-                   selected = sort(pts_search_found$races),
-                   options = list(
-                     size = 25,
-                     `selected-text-format` = "count > 1"
-                   ),
-                   multiple = TRUE
-                 ) # End RaceFilter
-          ),
-          column(2,
-                 pickerInput(
-                   inputId = "EthnicityFilter",
-                   label = "Ethnicity",
-                   choices = sort(pts_search_found$ethnicities),
-                   selected = sort(pts_search_found$ethnicities),
-                   options = list(
-                     size = 25,
-                     `selected-text-format` = "count > 1"
-                   ),
-                   multiple = TRUE
-                 ) # End EthnicityFilter
-          )# end column
-      ),
       hr(),
       fluidRow(
-        column(2,
-               actionButton("reset_filter", "Reset Filters")
-        ),
-        column(2,
+        column(3,
                downloadButton(
                  outputId = "save_cohort",
                  label = "Export Cohort"
                )
         ),
-        column(2,
+        column(3,
                actionButton("show_plots", "Show Plots")
-        ),
-        column(2,
-               tags$b("Selected Patient ID: ")
-               ),
-        column(2,
-               verbatimTextOutput("pt_id_table_selected",placeholder=TRUE)
-        ),
-        column(2,
-              disabled(actionButton("search_patient_button2", strong("Search")))
         )
-
       ),
-      hr(),
       
       shinyjs::hidden(
         div(id="finder_plots",
       fluidRow(
         plotlyOutput("cohort_plots")
       )
-        ))
-      ,
-      fluidRow(
-        column(width=7,
-               column(width=2,
-                      icon("arrow-down", "fa-3x")),
-               column(width=8,
-                      tags$h4("Select patient from table"))
-        ),
-        column(width=5,
-               column(width=7,
-                      tags$h4("Get patient data")),
-               column(width=2,
-                      icon("arrow-up", "fa-3x"))
-        )
-      ),
+        )),
       fluidRow(
        DT::dataTableOutput("found_cohort_table")
       )
-
-
     )
-
 
   })
   
-  observeEvent(input$reset_filter,{### change to cohort_found ranges
-
-    single_races = unique(pts_demographics[person_id %in% pts_search_found$l]$Race)
-    single_races = single_races[!grepl(",",single_races)]
-
-    updateSliderInput(session, inputId="slider_age",  value = c(pts_search_found$ages[1], pts_search_found$ages[2]))
-    updatePickerInput(session,inputId ="GenderFilter",choices = sort(pts_search_found$genders), selected = sort(pts_search_found$genders))
-    updatePickerInput(session,inputId ="StatusFilter",choices = sort(pts_search_found$statuses), selected = sort(pts_search_found$statuses))
-    updatePickerInput(session,inputId ="RaceFilter",choices = sort(pts_search_found$races), selected = sort(pts_search_found$races))
-    updatePickerInput(session,inputId ="EthnicityFilter",choices = sort(pts_search_found$ethnicities), selected = sort(pts_search_found$ethnicities))
-  })
-
-
-
-sel_cohort <- reactive({!is.null(input$found_cohort_table_rows_selected)}) 
- 
-  observe({
-    req(logged_in() == TRUE)
-
-    if(sel_cohort() == TRUE){
-      enable("search_patient_button2")
-      pt_id_clicked_from_table(global_cohort_found$df[input$found_cohort_table_rows_selected,person_id])
-    }else{
-      disable("search_patient_button2")
-      pt_id_clicked_from_table(NULL)
-    }
-    output$pt_id_table_selected <- renderText({pt_id_clicked_from_table()})
-  })
 
 
   observeEvent(input$show_plots,{
@@ -1708,57 +1624,19 @@ sel_cohort <- reactive({!is.null(input$found_cohort_table_rows_selected)})
 
   })
 
-
-
-
-
-  observeEvent(input$search_patient_button2, {
-    disable_during_search()
-    
-     pt_id = pt_id_clicked_from_table()
- 
-     withProgress(message = "Loading patient data...", min = 0, max = 1, value = 0, {
-
-       incProgress(1, detail = "Loading data...")
-      pt_id_selected(pt_id) # set reactiveVal pt_id
-      pt_data_selected$l=get_all_pt_data(pt_id_selected()) #save pt_data globally
-      pt_data_report$df = generate_pt_report(pt_data_selected$l) # generate pt_report here
-      multiplex_timeline$df <- format_multiplex_timeline(pt_data_report$df) # generate multiplex data from pt_report
-      showNotification("Patient data loaded.")
-      updateTabsetPanel(session=session,"inTabset",selected = "Overall Report")
-     })
-     
-  enable_after_search()
-
-  })
-
-
+  
   disable_during_search <-function(){
-    disable("search_patient_button2")
     disable("finder_type")
     disable("criteria_search_button_finder")
     disable("criteria_search_button_reset")
-    disable("slider_age")
-    disable("GenderFilter")
-    disable("StatusFilter")
-    disable("RaceFilter")
-    disable("EthnicityFilter")
-    disable("reset_filter")
     disable("save_cohort")
     disable("show_plots")
   }
 
 enable_after_search <-function(){
-  enable("search_patient_button2")
   enable("finder_type")
   enable("criteria_search_button_finder")
   enable("criteria_search_button_reset")
-  enable("slider_age")
-  enable("GenderFilter")
-  enable("StatusFilter")
-  enable("RaceFilter")
-  enable("EthnicityFilter")
-  enable("reset_filter")
   enable("save_cohort")
   enable("show_plots")
  }
@@ -1766,7 +1644,7 @@ enable_after_search <-function(){
   
   
   output$cohort_plots <- renderPlotly({
-    cohort_found = global_cohort_found$df
+    cohort_found = global_cohort_found$df[input$found_cohort_table_rows_all]
     
     req(nrow(cohort_found)>0)
 
@@ -1805,8 +1683,6 @@ enable_after_search <-function(){
 
 
     cohort_race = cohort_found[,c("person_id","Race")]
-    #cohort_race[grepl(",",Race),"Race"] = "Multi-racial"
-
 
     raceTitle <- list(
       text = "Race",
@@ -1843,8 +1719,6 @@ enable_after_search <-function(){
 
     ethnicityData <- data.table(cohort_found %>%  dplyr::count(Ethnicity) %>%  mutate(prop = prop.table(n)))
 
-
-
     p3 <- plot_ly(ethnicityData, x=~Ethnicity, y = ~prop, type = 'bar', color = ~Ethnicity, text = ~n)  %>%
       layout(xaxis = list(title="",tickangle = 90), showlegend=FALSE, annotations = ethnicityTitle)
 
@@ -1872,6 +1746,14 @@ enable_after_search <-function(){
   })
 
 
+  shinyInput <- function(FUN, len, id, ...) { 
+    # credit: https://stackoverflow.com/questions/45739303/r-shiny-handle-action-buttons-in-data-table
+    inputs <- character(len)
+    for (i in seq_len(len)) {
+      inputs[i] <- as.character(FUN(paste0(id, i), ...))
+    }
+    inputs
+  }  
 
 
   output$found_cohort_table <- DT::renderDataTable({
@@ -1882,31 +1764,57 @@ enable_after_search <-function(){
     cohort_found = pts_demographics[person_id %in% pt_list_found]
     cohort_found = cohort_found[,-c("death_date")]
 
-     # age filter
-     cohort_found=cohort_found[(cohort_found$age >= as.numeric(input$slider_age[1]) & cohort_found$age <= as.numeric(input$slider_age[2])),]
+    cohort_found$age = as.numeric(cohort_found$age)
+    cohort_found$year_of_birth = as.numeric(cohort_found$year_of_birth)
+    cohort_found$Gender = as.factor(cohort_found$Gender)
+    cohort_found$Race = as.factor(cohort_found$Race)
+    cohort_found$Ethnicity = as.factor(cohort_found$Ethnicity)
+    cohort_found$Status = as.factor(cohort_found$Status)
     
-    # sex filter
-    cohort_found=cohort_found[cohort_found$Gender %in% input$GenderFilter,]
-
-    # status filter
-    cohort_found=cohort_found[cohort_found$Status %in% input$StatusFilter,]
-
-    # race filter
-    cohort_found=cohort_found[grepl(paste(input$Race,collapse="|"),cohort_found$Race),] # deal with multiple-races in record
-
-
-    # enthnicity filter
-    cohort_found=cohort_found[cohort_found$Ethnicity %in% input$EthnicityFilter,]
-
     global_cohort_found$df = cohort_found
-
+    
+    
+    cohort_found <- cohort_found %>% mutate(Search = shinyInput(actionButton, nrow(cohort_found), 'button_', label = NULL,icon = icon("search", lib = "glyphicon"), onclick = 'Shiny.onInputChange(\"select_pt_button\",  this.id)' ))
+    
     datatable(cohort_found,
+              filter = "top",
               rownames = FALSE,
               selection = 'single',
-              style = "bootstrap")
+              style = "bootstrap",
+              escape = FALSE,
+              options = list(
+                columnDefs = list(list(targets=7, searchable = FALSE))
+              )
+    )
 
   })
 
+  
+  observeEvent(input$select_pt_button, {
+    selectedRow <- as.numeric(strsplit(input$select_pt_button, "_")[[1]][2])
+    disable_during_search()
+    
+    withProgress(message = "Loading patient data...", min = 0, max = 1, value = 0, {
+      
+      incProgress(1, detail = "Loading data...")
+      pt_id_selected(global_cohort_found$df[selectedRow]$person_id) # set reactiveVal pt_id #### <- !! issue here can't use global_chorot_found
+      
+      pt_data_selected$l=get_all_pt_data(pt_id_selected()) #save pt_data globally
+      pt_data_report$df = generate_pt_report(pt_data_selected$l) # generate pt_report here
+      
+      ### functionalize this
+      shinyjs::hide("login_message_explore", anim = FALSE)
+      shinyjs::show("explore_info_open", anim = FALSE)
+      ######
+      
+      multiplex_timeline$df <- format_multiplex_timeline(pt_data_report$df) # generate multiplex data from pt_report
+      showNotification("Patient data loaded.")
+      updateTabsetPanel(session=session,"inTabset",selected = "Overall Report")
+    })
+    
+    enable_after_search()
+    
+  })
   
   output$save_cohort <- downloadHandler(
 
@@ -1914,7 +1822,7 @@ enable_after_search <-function(){
       "saved_cohort.csv"
     },
     content = function(file) {
-      write.csv(global_cohort_found$df, file, row.names = FALSE,quote=FALSE)
+      write.csv(global_cohort_found$df[input$found_cohort_table_rows_all], file, row.names = FALSE,quote=FALSE)
     }
   )
 
@@ -2126,8 +2034,6 @@ enable_after_search <-function(){
                    multiple = TRUE
                  ) 
                )
-          
-          
         )
     
       ) # end fluidRow
@@ -2146,13 +2052,19 @@ enable_after_search <-function(){
       # retrieve patient report from global variable (filtered report)
       pt_report = filtered_pt_report()
       pt_report = pt_report[order(pt_report$Date),]
+      pt_report = pt_report[,c("Date","Type","Event","Value")]
+      pt_report$Type = as.character(pt_report$Type)
+      pt_report$Event = as.character(pt_report$Event)
+      pt_report$Value = as.character(pt_report$Value)
 
       shiny::validate(need(!is.null(pt_report), message = FALSE))
-      datatable(pt_report[,c("Date","Type","Event","Value")],
+      datatable(pt_report,
+                filter = "top",
                 rownames = FALSE,
                 selection = 'single',
                 style = "bootstrap",
                 options = list(
+                  columnDefs = list(list(targets= c(1,2,3), searchable = FALSE)),
                   pageLength = 10
                 )) 
 
@@ -2160,14 +2072,13 @@ enable_after_search <-function(){
       })
   
 
-  
   output$export_report <- downloadHandler(
 
     filename = function() {
       paste(pt_id_selected(), "_report.csv", sep = "")
     },
     content = function(file) {
-      write.csv(filtered_pt_report(), file, row.names = FALSE,quote=FALSE)
+      write.csv(filtered_pt_report()[input$report_table_rows_all], file, row.names = FALSE,quote=FALSE)
     }
   )
 
@@ -2176,18 +2087,15 @@ enable_after_search <-function(){
   ######### TIMELINE #########
   ############################
   
-####################### 
   
   # Timeline info and filter subheader 
   output$timeline_filter_options <- renderUI({
     
     req(logged_in()==TRUE & !is.null(pt_id_selected()))
 
-
     encounters = pt_data_selected$l$Encounters
 
      fluidPage(
-       
        fluidRow( 
         column(width = 2,offset = 0, style='padding:0px;',
 
@@ -2204,7 +2112,7 @@ enable_after_search <-function(){
       ),
       fluidRow( # picker input row
         hr(),
-    column(width =4,
+          column(width =4,
            pickerInput( # Visit Type
              inputId = "VisitTypePicker",
              label = "Visit Types",
@@ -2219,8 +2127,8 @@ enable_after_search <-function(){
              ),
              multiple = TRUE
            )
-    ),
-    column(width =4,
+        ),
+        column(width =4,
            pickerInput( # Admitting Type
              inputId = "AdmittingTypePicker",
              label = "Admitting Concept Type",
@@ -2236,7 +2144,7 @@ enable_after_search <-function(){
              multiple = TRUE
            )
     ),
-  column(width =4,
+      column(width =4,
          pickerInput( # Discharge Type
            inputId = "DischargeTypePicker",
            label = "Discharge Concept Type",
@@ -2251,13 +2159,13 @@ enable_after_search <-function(){
            ),
            multiple = TRUE
          )
-  )
-),# end picker input row
+    )
+    ),# end picker input row
       fluidRow(column(width = 12,
+        # credit: https://github.com/daattali/timevis              
         timevisOutput("encounter_timeline")
-      )
+         )
       ),
-
       fluidRow(
                  # Timevis Buttons
                  div(id = "interactiveActions",
@@ -2278,8 +2186,7 @@ enable_after_search <-function(){
   
 
   encounter_timeline_data <- reactive({
-
-
+    
     encounters = pt_data_selected$l$Encounters
 
     encounters=encounters[!is.na(visit_start_date)] # remove NA dates
@@ -2293,8 +2200,9 @@ enable_after_search <-function(){
   })
 
 
+  
   output$encounter_timeline<- renderTimevis({
-
+  # credit: https://github.com/daattali/timevis 
    encounters_timeline = encounter_timeline_data()
 
     req(nrow(encounters_timeline)>0)
@@ -2316,7 +2224,6 @@ enable_after_search <-function(){
 
   
 #### Timevis buttons
-
   observeEvent(input$fitAllEncounters, {
     fitWindow("encounter_timeline")
   })
@@ -2326,9 +2233,9 @@ enable_after_search <-function(){
     setWindow("encounter_timeline", current_date-365, current_date)
   })
 
-
-
-  output$timeline_title <- renderText({
+  
+### Timevis info
+output$timeline_title <- renderText({
     req(logged_in()==TRUE)
     
     if(!is.null(pt_id_selected())){
@@ -2341,8 +2248,6 @@ enable_after_search <-function(){
 
   
   #### clicking on encounter  
-  
-
   observeEvent(input$encounter_timeline_selected,{
    req(logged_in()==TRUE)
     tl_id <- input$encounter_timeline_selected
@@ -2352,12 +2257,14 @@ enable_after_search <-function(){
 
     timevis_encounters$id = 1:nrow(timevis_encounters)
   
-  enc_id_selected(timevis_encounters[id == tl_id,]$visit_occurrence_id) #update selected encounter id
+    enc_id_selected(timevis_encounters[id == tl_id,]$visit_occurrence_id) #update selected encounter id
     req(!is.null(enc_id_selected()))
 
     shinyjs::show("encounter_selected_info_panel")
 
 
+    #### Modality-specific tables
+    
     output$encounter_conditions_table <- DT::renderDataTable({
       conditions <- pt_data_selected$l$Conditions
 
@@ -2366,8 +2273,13 @@ enable_after_search <-function(){
       conditions = conditions[,c("condition_concept_name","condition_type","condition_status_type","condition_concept_vocabulary","condition_concept_code","condition_source_vocabulary","condition_source_code","condition_start_date","condition_end_date")]
 
       datatable(conditions,
+                extensions = 'Buttons',
                 rownames = FALSE,
-                style = "bootstrap")
+                style = "bootstrap",
+                options = list(
+                  dom = 'Bfrtip',
+                  buttons = c('csv', 'excel')
+                ))
     })
 
     output$encounter_devices_table <- DT::renderDataTable({
@@ -2378,8 +2290,13 @@ enable_after_search <-function(){
       devices = devices[,c("device_concept_name","device_type","device_exposure_start_date","device_exposure_end_date","device_concept_vocabulary","device_concept_code","device_source_vocabulary","device_source_code")]
 
       datatable(devices,
+                extensions = 'Buttons',
                 rownames = FALSE,
-                style = "bootstrap")
+                style = "bootstrap",
+                options = list(
+                  dom = 'Bfrtip',
+                  buttons = c('csv', 'excel')
+                ))
     })
 
     output$encounter_measurements_table <- DT::renderDataTable({
@@ -2392,8 +2309,13 @@ enable_after_search <-function(){
       measurements = measurements[,c("measurement_concept_name","value_as_number","value_concept", "unit_concept", "measurement_type", "measurement_date","measurement_concept_vocabulary","measurement_concept_code","measurement_source_vocabulary","measurement_source_code")]
 
       datatable(measurements,
+                extensions = 'Buttons',
                 rownames = FALSE,
-                style = "bootstrap")
+                style = "bootstrap",
+                options = list(
+                  dom = 'Bfrtip',
+                  buttons = c('csv', 'excel')
+                ))
     })
     
         output$encounter_medications_table <- DT::renderDataTable({
@@ -2404,8 +2326,13 @@ enable_after_search <-function(){
           medications = medications[,c("medication_concept_name","refills","quantity","days_supply","drug_type","route_concept","drug_exposure_start_date","drug_exposure_end_date","medication_concept_vocabulary","medication_concept_code","medication_source_vocabulary","medication_source_code")]
 
           datatable(medications,
+                    extensions = 'Buttons',
                     rownames = FALSE,
-                    style = "bootstrap")
+                    style = "bootstrap",
+                    options = list(
+                      dom = 'Bfrtip',
+                      buttons = c('csv', 'excel')
+                    ))
         })
             output$encounter_observations_table <- DT::renderDataTable({
               observations <- pt_data_selected$l$Observations
@@ -2415,8 +2342,13 @@ enable_after_search <-function(){
               observations = observations[,c("observation_concept_name","value_as_number","value_as_string","value_concept","unit_source_value","observation_type","observation_concept_vocabulary","observation_concept_code","observation_source_vocabulary","observation_source_code")]
 
               datatable(observations,
+                        extensions = 'Buttons',
                         rownames = FALSE,
-                        style = "bootstrap")
+                        style = "bootstrap",
+                        options = list(
+                          dom = 'Bfrtip',
+                          buttons = c('csv', 'excel')
+                        ))
             })
 
     output$encounter_procedures_table <- DT::renderDataTable({
@@ -2427,31 +2359,36 @@ enable_after_search <-function(){
       procedures = procedures[,c("procedure_concept_name","procedure_type","procedure_date","procedure_concept_vocabulary","procedure_concept_code","procedure_source_vocabulary","procedure_source_code")]
 
       datatable(procedures,
+                extensions = 'Buttons',
                 rownames = FALSE,
-                style = "bootstrap")
-    })
+                style = "bootstrap",
+                options = list(
+                  dom = 'Bfrtip',
+                  buttons = c('csv', 'excel')
+                ))
+          })
 
    })
    
+  ######### End modality-specific tables
 
   output$pt_encounter_data_panel <- renderUI({
-
+   # plot encounter/visit type information (UI for page)
     req(logged_in()==TRUE & !is.null(pt_id_selected()))
 
     if(input$encounter_plot_type != "no_enc_selected"){
-  plotlyOutput("plotly_pt_encounter_data")
+       plotlyOutput("plotly_pt_encounter_data")
     }
 
   })
 
 
   output$encounter_info_text <- renderUI({
+    # text information regarding selected encounter
     req(logged_in()==TRUE & !is.null(pt_id_selected()) & !is.null(enc_id_selected()))
 
     encounters <- pt_data_selected$l$Encounters
     encounters <- encounters[visit_occurrence_id == enc_id_selected()]
-
-
 
     fluidPage(
       fluidRow(tags$h4("Encounter Information: ")),
@@ -2523,6 +2460,7 @@ enable_after_search <-function(){
   ############################
   
   output$explorer_title <- renderText({
+    # header text for explorer
     req(logged_in()==TRUE)
     
     if(!is.null(pt_id_selected())){
