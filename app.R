@@ -69,9 +69,9 @@ ui <- fluidPage(
                                                       column(width=4, # About button
                                                         actionButton("gotoAbout","",icon=icon("info-circle","fa-5x"),lib="font-awesome"),
                                                         fluidRow(tags$h5("About"))),
-                                                      column(width=4, #Download App button
-                                                        actionButton("gotoDownloadApp","",icon=icon("download","fa-5x"),lib="font-awesome"),
-                                                        fluidRow(tags$h5("Download App")))),         
+                                                      column(width=4, #Configuration button
+                                                        actionButton("gotoConfiguration","",icon=icon("download","fa-5x"),lib="font-awesome"),
+                                                        fluidRow(tags$h5("Configuration")))),         
                                                    tags$br(),
                                                    HTML(paste0(h5("To begin: click ",  tags$u(tags$b("Load Credentials")), "then", tags$u(tags$b("Login"))))),
                                                    tags$hr()
@@ -89,23 +89,19 @@ ui <- fluidPage(
                                                      label = "Driver",  
                                                      choices = c("MySQL","PostgreSQL", "Amazon Redshift", "Microsoft SQL Server", "Microsoft Parallel Data Warehouse", "Google BigQuery"), 
                                                      selected = "MySQL",
-                                                     multiple = FALSE
-                                                  ),
+                                                     multiple = FALSE),
+      
                                                    textInput(inputId="sqlport", label="Port", value = "", width = NULL, placeholder = "Port"),
                                                    
                                                   fluidRow(column(width=6,
                                                                  actionButton(width = 150,
                                                                               inputId = "save_credentials",
-                                                                              label = "Save Credentials"
-                                                                 )
-                                                  ),
+                                                                              label = "Save Credentials")),
                                                   column(width=6,
                                                          actionButton(width =150,
                                                                                inputId = "load_credentials",
-                                                                               label = "Load Credentials"
-                                                         )
-                                                  )
-                                                  ),HTML("<br>"),
+                                                                               label = "Load Credentials"))),
+                                                  HTML("<br>"),
                                                   fluidRow(
                                                     column(width=12,
                                                  directoryInput('directory', label = "", value = getOption("currentPath"))
@@ -124,9 +120,7 @@ ui <- fluidPage(
                                                           actionButton(width = 150,
                                                             inputId = "login",
                                                             label = "Login"
-                                                          )
-                                                   )
-                                                  )     
+                                                          )))     
                                             ), # end Login column
                                             column(width=7, # utilities column
                                                    shinyjs::hidden(
@@ -185,21 +179,13 @@ ui <- fluidPage(
                                                   
                                             ) # end utilities column
                                             ))  # end shinyjs:hidden
-                                          ), #end fluidRow
-                                          fluidRow(#### remove and replace in Team dropdown from header
-                                            hr(),
-                                            tags$h4("Who We Are"),
-                                            hr(width=100),
-                                            tags$p("Butte Lab, Institute for Computational Health Sciences, UCSF"),
-                                            tags$p("Contact & Lab Logo/Dscription")
-                                            
-                                          )    
-                                          
+                                          ) #end fluidRow
                                 ) # end fluidPage
                       ) # end mainPanel
              ), # end tabpanel Home
 
-             tabPanel("Patient Finder",    ############# FINDER
+             tabPanel("Patient Finder",    
+                      ############# FINDER tab
                       style = "width:100%; margin-left:250px; margin-right:200px",
                       mainPanel(
                         div(id="login_message_finder",
@@ -304,7 +290,8 @@ ui <- fluidPage(
 
                       ) # end mainPanel
                       ), # end Finder
-             tabPanel("Overall Report",    ############# REPORT
+             tabPanel("Overall Report",    
+                      ############# REPORT tab
                       style = "width:100%; margin-left:250px; margin-right:200px",
                       mainPanel(
                         div(id="login_message_report",
@@ -327,7 +314,8 @@ ui <- fluidPage(
                                   ))# end shinyjs Report
                       ) # end mainPanel
                       ), # end Report
-             tabPanel("Encounter Timeline",    ############# TIMELINE
+              tabPanel("Encounter Timeline",   
+                       ############# TIMELINE tab
                       style = "width:100%; margin-left:250px; margin-right:200px",
                       mainPanel(
                         div(id="login_message_timeline",
@@ -375,7 +363,8 @@ ui <- fluidPage(
                                    )) # end shinyjs Timeline  
                                   ) #end mainPanel   
                                       ), # end Timeline
-             tabPanel("Data Explorer",    ############# DATA EXPLORER
+             tabPanel("Data Explorer",    
+                      ############# DATA EXPLORER tab
                       div(id="login_message_explorer",
                           tags$h4("Please log in to contunue.")
                       ),
@@ -444,9 +433,9 @@ ui <- fluidPage(
                                                                    tags$li("Database field (required): For MySQL this is the database itself. For PostgreSQL this is the schema."),
                                                                    tags$li("Driver type (required): Relational database structure in which EHR data are stored (see below for more details)"),
                                                                    tags$li("Port for connection (not required)"),
-                                                                   tags$li("Saves current credentials that are entered into the credentials .Renviron file (see Installation page for more details) in the specified path (see #11). Note this button is disabled for the public sandbox webserver."),
-                                                                   tags$li("Loads credentials into respective field from credentials .Renviron file (see Installation page for more details). Will only load fields that adhere to these formatting guidelines. This button will only be enabled if an .Renviron file can be found in the current specified path (see #11)."),
-                                                                   tags$li(HTML("Set directory for credentials: Uses <a href= 'https://github.com/wleepang/shiny-directory-input'>DirectoryInput package </a> for selecting directory with credentials file. Credentials are saved in an .Renviron file (see Installation page for more details). Note this button is disabled for the public sandbox webserver.")),
+                                                                   tags$li("Saves current credentials that are entered into the credentials .Renviron file (see Configuration page for more details) in the specified path (see #11). Note this button is disabled for the public sandbox webserver."),
+                                                                   tags$li("Loads credentials into respective field from credentials .Renviron file (see Configuration page for more details). Will only load fields that adhere to these formatting guidelines. This button will only be enabled if an .Renviron file can be found in the current specified path (see #11)."),
+                                                                   tags$li(HTML("Set directory for credentials: Uses <a href= 'https://github.com/wleepang/shiny-directory-input'>DirectoryInput package </a> for selecting directory with credentials file. Credentials are saved in an .Renviron file (see Configuration page for more details). Note this button is disabled for the public sandbox webserver.")),
                                                                    tags$li("Login/Logout buttons")
                                                                  )
                                                           )
@@ -755,14 +744,16 @@ ui <- fluidPage(
                                  tags$br(),
                                  tags$h6("Example Patient"),
                                  p(HTML("As the DE-SynPUF data does not contain patient measurement results, we generated a profile for a patient with Chron's Disease with representative clinical data (e.g., disease codes and lab test results) for illustrative purposes. Users can recreate this example patient using the script <a href = ''> found here </a>. The script is formatted for a MySQL database.")),
+                                 tags$h5("Who We Are"),
+                                 p(HTML("PatientExploreR was created by Benjamin Glicksberg (ben.glicksberg@gmail.com) while working as a post-doctoral scholar in the lab of <a href = 'http://buttelab.ucsf.edu/'> Dr. Atul Butte </a> at UCSF within the <a href = 'http://bakarinstitute.ucsf.edu/'>Bakar Computaitonal Health Sciences Institute </a>. This project was a collaboration between many individuals (see Manuscript Information) from UCSF, Columbia University, and the Icahn School of Medicine at Mount Sinai.")),
                                  tags$hr()
                                  ),
-                        tabPanel("Download App",
-                                 fluidRow(align="center",tags$h4("Download App"),hr(width=100)),
+                        tabPanel("Configuration",
+                                 fluidRow(align="center",tags$h4("Configuration"),hr(width=100)),
                                  tags$br(),
                                  style = "margin-left:250px; max-width:1000px; margin-right:250px",  
                                  tags$h5("Source Files"),
-                                 p(HTML("<a href = ''> GitHub Repository </a>")),
+                                 p(HTML("<a href = 'https://github.com/BenGlicksberg/PatientExploreR'> GitHub Repository </a>")),
                                  tags$br(),
                                  tags$h5("Requirements"),
                                  tags$p("TBD"),
@@ -786,7 +777,6 @@ ui <- fluidPage(
 server <- function(input, output,session) {
 
 if (!interactive()) sink(stderr(), type = "output")  ## *** needed?
-source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
   
   
   ############################
@@ -1229,8 +1219,8 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     updateTabsetPanel(session=session,"inTabset",selected = "Help")
   })
   
-  observeEvent(input$gotoDownloadApp, {
-    updateTabsetPanel(session=session,"inTabset",selected = "Download App")
+  observeEvent(input$gotoConfiguration, {
+    updateTabsetPanel(session=session,"inTabset",selected = "Configuration")
   })
   
   
