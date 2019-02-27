@@ -17,4 +17,5 @@ devtools::install_github("ohdsi/SqlRender")
 devtools::install_github("rstudio/DT")
 devtools::install_github("daattali/timevis")
 devtools::install_github("daattali/shinyalert")
+devtools::install_github("andrewsali/shinycssloaders")
 
