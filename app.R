@@ -1,34 +1,29 @@
 ####################
 # Ben Glicksberg
 # Butte Lab / UCSF
-# 2018
+# 2018-19
 ####################
-library(DBI)
-library(odbc)
-library(RMySQL)
-library(shiny)
-library(shinyWidgets)
-library(shinyjs)
-library(shinyalert)
-library(shinythemes)
-library(plotly)
-library(timevis)
-library(stringr)
-library(dplyr)
-
+suppressPackageStartupMessages(library(DBI))
+suppressPackageStartupMessages(library(shiny))
+suppressPackageStartupMessages(library(shinyWidgets))
+suppressPackageStartupMessages(library(shinyjs))
+suppressPackageStartupMessages(library(shinyalert))
+suppressPackageStartupMessages(library(shinythemes))
+suppressPackageStartupMessages(library(shinycssloaders))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(timevis))
+suppressPackageStartupMessages(library(stringr))
+suppressPackageStartupMessages(library(dplyr))
 
 options("currentPath" = paste0(getwd(),'/'))
-
-### this will not be in the main package as wd will be set by button
-#options("currentPath" = "/srv/shiny-server/patientexplorer/")
-#options("currentPath" = "/Users/bglicksberg/Desktop/Ben Glicksberg/Butte Lab/Projects/PatientExploreR/PatientExploreR/OMOP/PatientExploreR_Sandbox/")
-
+source("global.R")
 
 ##############################################################
 ############################# UI #############################
 ##############################################################
 
 ui <- fluidPage(
+  #### sets page style
   tags$head(
     tags$style(
       HTML(
@@ -47,42 +42,37 @@ ui <- fluidPage(
          )
       )
       ),
-  navbarPage("PatientExploreR",id="inTabset",
-             tabPanel("Home", ### BEGIN Home
-            style = "width:100%; margin-left:250px; margin-right:200px",
+  navbarPage("PatientExploreR",id="inTabset", ### Navigation bar
+             #### HOME tab
+             tabPanel("Home",
+                  style = "width:100%; margin-left:250px; margin-right:200px",
                       mainPanel(align="center",
                                 useShinyjs(),
                                 useShinyalert(),
                                 fluidPage(theme = shinytheme("paper"),
-                                          fluidRow(tags$h3("PatientExploreR Sandbox Server"),
+                                          fluidRow( # intro fluidRow
+                                                   tags$h3("PatientExploreR Sandbox Server"),
                                                    tags$p("PatientExploreR interfaces with a relational database of EHR data in the Observational Medical Outcomes Partnership (OMOP) Common Data Model (CDM). This application produces patient-level interactive and dynamic reports and visualization of clinical data, without requiring programming skills.",align="left"),
                                                    HTML(paste0(h5("All patient data are synthesized and contain ", tags$b("no Protected Health Information")))),
                                                    tags$br(),
                                                    fluidRow(
-                                            column(width=4,
-                                                   actionButton("gotoHelp","",icon=icon("question-circle","fa-5x"),lib="font-awesome"),
-                                                   fluidRow(tags$h5("Help"))
-                                                   )
-                                            ,
-                                            column(width=4,
-                                                   actionButton("gotoAbout","",icon=icon("info-circle","fa-5x"),lib="font-awesome"),
-                                                   fluidRow(tags$h5("About"))
-                                            )
-                                            ,
-                                            column(width=4,
-                                                   actionButton("gotoDownloadApp","",icon=icon("download","fa-5x"),lib="font-awesome"),
-                                                   fluidRow(tags$h5("Download App"))
-                                            )
-                                            ),         
+                                                      column(width=4, # Help button
+                                                        actionButton("gotoHelp","",icon=icon("question-circle","fa-5x"),lib="font-awesome"),
+                                                        fluidRow(tags$h5("Help"))),
+                                                      column(width=4, # About button
+                                                        actionButton("gotoAbout","",icon=icon("info-circle","fa-5x"),lib="font-awesome"),
+                                                        fluidRow(tags$h5("About"))),
+                                                      column(width=4, #Configuration button
+                                                        actionButton("gotoConfiguration","",icon=icon("download","fa-5x"),lib="font-awesome"),
+                                                        fluidRow(tags$h5("Configuration")))),         
                                                    tags$br(),
-						
-                                            HTML(paste0(h5("To begin: click ",  tags$u(tags$b("Load Credentials")), "then", tags$u(tags$b("Login"))))),
-
+                                                   HTML(paste0(h5("To begin: click ",  tags$u(tags$b("Load Credentials")), "then", tags$u(tags$b("Login"))))),
                                                    tags$hr()
-                                          ), #end fluidRow
+                                          ), # end intro fluidRow
                                           fluidRow(
                                             column(width=5, # Login column
                                                    tags$h4("Please log-in below:"),
+                                                   # Credentials section 
                                                    textInput(inputId="sqlid", label="User ID", value = "", width = NULL, placeholder = "User ID"),
                                                    passwordInput(inputId="sqlpass", label="Password", value = "", width = NULL,placeholder = NULL),
                                                    textInput(inputId="sqlhost", label="Host", value = "", width = NULL, placeholder = "Host"),
@@ -92,26 +82,23 @@ ui <- fluidPage(
                                                      label = "Driver",  
                                                      choices = c("MySQL","PostgreSQL", "Amazon Redshift", "Microsoft SQL Server", "Microsoft Parallel Data Warehouse", "Google BigQuery"), 
                                                      selected = "MySQL",
-                                                     multiple = FALSE
-                                                  ),
+                                                     multiple = FALSE),
+      
                                                    textInput(inputId="sqlport", label="Port", value = "", width = NULL, placeholder = "Port"),
                                                    
                                                   fluidRow(column(width=6,
-                                                                 disabled(actionButton(width = 150,
-                                                                              inputId = "save_crednetials",
-                                                                              label = "Save Credentials"
-                                                                 ))
-                                                  ),
+                                                                 actionButton(width = 150,
+                                                                              inputId = "save_credentials",
+                                                                              label = "Save Credentials")),
                                                   column(width=6,
                                                          actionButton(width =150,
                                                                                inputId = "load_credentials",
-                                                                               label = "Load Credentials"
-                                                         )
-                                                  )
-                                                  ),HTML("<br>"),
+                                                                               label = "Load Credentials"))),
+                                                  HTML("<br>"),
                                                   fluidRow(
                                                     column(width=12,
-                                                  disabled(directoryInput('directory', label = "", value = getOption("currentPath")))
+                                                 directoryInput('directory', label = "", value = getOption("currentPath"))
+                                                 # credit: https://github.com/wleepang/shiny-directory-input
                                                     )
                                                   ),  
                                                   HTML("<br>"),
@@ -126,9 +113,7 @@ ui <- fluidPage(
                                                           actionButton(width = 150,
                                                             inputId = "login",
                                                             label = "Login"
-                                                          )
-                                                   )
-                                                  )     
+                                                          )))     
                                             ), # end Login column
                                             column(width=7, # utilities column
                                                    shinyjs::hidden(
@@ -187,21 +172,13 @@ ui <- fluidPage(
                                                   
                                             ) # end utilities column
                                             ))  # end shinyjs:hidden
-                                          ), #end fluidRow
-                                          fluidRow(#### remove and replace in Team dropdown from header
-                                            hr(),
-                                            tags$h4("Who We Are"),
-                                            hr(width=100),
-                                            tags$p("Butte Lab, Institute for Computational Health Sciences, UCSF"),
-                                            tags$p("Contact & Lab Logo/Dscription")
-                                            
-                                          )    
-                                          
+                                          ) #end fluidRow
                                 ) # end fluidPage
                       ) # end mainPanel
              ), # end tabpanel Home
 
-             tabPanel("Patient Finder",    ############# FINDER
+             tabPanel("Patient Finder",    
+                      ############# FINDER tab
                       style = "width:100%; margin-left:250px; margin-right:200px",
                       mainPanel(
                         div(id="login_message_finder",
@@ -298,7 +275,6 @@ ui <- fluidPage(
                 shinyjs::hidden ( 
                   div(id="pts_found_open",       
                       fluidRow(
-                        hr(),
                         uiOutput("pts_found_display")
                       )
                   ))    # end pts_found shinyjs:hidden
@@ -307,7 +283,8 @@ ui <- fluidPage(
 
                       ) # end mainPanel
                       ), # end Finder
-             tabPanel("Overall Report",    ############# REPORT
+             tabPanel("Overall Report",    
+                      ############# REPORT tab
                       style = "width:100%; margin-left:250px; margin-right:200px",
                       mainPanel(
                         div(id="login_message_report",
@@ -330,7 +307,8 @@ ui <- fluidPage(
                                   ))# end shinyjs Report
                       ) # end mainPanel
                       ), # end Report
-             tabPanel("Encounter Timeline",    ############# TIMELINE
+              tabPanel("Encounter Timeline",   
+                       ############# TIMELINE tab
                       style = "width:100%; margin-left:250px; margin-right:200px",
                       mainPanel(
                         div(id="login_message_timeline",
@@ -378,7 +356,8 @@ ui <- fluidPage(
                                    )) # end shinyjs Timeline  
                                   ) #end mainPanel   
                                       ), # end Timeline
-             tabPanel("Data Explorer",    ############# DATA EXPLORER
+             tabPanel("Data Explorer",    
+                      ############# DATA EXPLORER tab
                       div(id="login_message_explorer",
                           tags$h4("Please log in to contunue.")
                       ),
@@ -447,9 +426,9 @@ ui <- fluidPage(
                                                                    tags$li("Database field (required): For MySQL this is the database itself. For PostgreSQL this is the schema."),
                                                                    tags$li("Driver type (required): Relational database structure in which EHR data are stored (see below for more details)"),
                                                                    tags$li("Port for connection (not required)"),
-                                                                   tags$li("Saves current credentials that are entered into the credentials .Renviron file (see Installation page for more details) in the specified path (see #11). Note this button is disabled for the public sandbox webserver."),
-                                                                   tags$li("Loads credentials into respective field from credentials .Renviron file (see Installation page for more details). Will only load fields that adhere to these formatting guidelines. This button will only be enabled if an .Renviron file can be found in the current specified path (see #11)."),
-                                                                   tags$li(HTML("Set directory for credentials: Uses <a href= 'https://github.com/wleepang/shiny-directory-input'>DirectoryInput package </a> for selecting directory with credentials file. Credentials are saved in an .Renviron file (see Installation page for more details). Note this button is disabled for the public sandbox webserver.")),
+                                                                   tags$li("Saves current credentials that are entered into the credentials .Renviron file (see Configuration page for more details) in the specified path (see #11). Note this button is disabled for the public sandbox webserver."),
+                                                                   tags$li("Loads credentials into respective field from credentials .Renviron file (see Configuration page for more details). Will only load fields that adhere to these formatting guidelines. This button will only be enabled if an .Renviron file can be found in the current specified path (see #11)."),
+                                                                   tags$li(HTML("Set directory for credentials: Uses <a href= 'https://github.com/wleepang/shiny-directory-input'>DirectoryInput package </a> for selecting directory with credentials file. Credentials are saved in an .Renviron file (see Configuration page for more details). Note this button is disabled for the public sandbox webserver.")),
                                                                    tags$li("Login/Logout buttons")
                                                                  )
                                                           )
@@ -490,7 +469,7 @@ ui <- fluidPage(
                                                                  tags$b("Section Selections"),
                                                                  tags$br(),
                                                                  tags$ol(
-                                                                   tags$li(HTML("Click Tutorial to begin an interactive tutorial using <a href = 'http://shiny.rstudio.com/articles/js-introjs.html'> introJS </a>")),
+                                                                   tags$li(HTML("Click to get to this Help page.")),
                                                                    tags$li("Patient Finder can be used for cohort querying and basic plots and information. Select a certain patient for other sections"),
                                                                    tags$li("Requires a patient selected from #2. Interactive report of all clinical data generated as well as an automated clinical summary."),
                                                                    tags$li("Requires a patient selected from #2. Intearactive timeline plot of clinical encounters as well as frequency plots."),
@@ -599,19 +578,19 @@ ui <- fluidPage(
                                                         tags$hr(),
                                                         fluidRow( 
                                                           column(width=5,
-                                                                 tags$img(src = "images/Finder/finder7.png", height = '300px', width = '400px')),
+                                                                 tags$img(src = "images/Finder/finder7.png", height = '350px', width = '400px')),
                                                           column(width=7,
                                                                  tags$b("Criteria Search Cohort"),
                                                                  tags$br(),
                                                                  tags$ol(
-                                                                   tags$li("Can filter cohort below by any demographic feature (automatically adjusts table and plots; see below for more details)"),
-                                                                   tags$li("Table of all selected patients in cohort. Can be sorted by clicking on columns. Filtered based on Filter options above "),
+                                                                   tags$li("Table of all selected patients in cohort. Can filter cohort below by any demographic feature (automatically adjusts table and plots; see below for more details)"),
+                                                                   tags$li("Table can be sorted by clicking on columns and can show different amounts of entries per page. "),
+                                                                   tags$li("Table can be filtered by any demographic filter options by selecting subsets below column name."),
                                                                    tags$li("Lists number of patients in filtered cohort"),
                                                                    tags$li("Navigate the cohort table by these control buttons"),
-                                                                   tags$li("Reset Filters returns all filter options above to default"),
                                                                    tags$li("Can export/save cohort demographic table into a .csv file for utility in other programs."),
                                                                    tags$li("Show plots of demographic features for cohort. Dynamically changed based on filter options"),
-                                                                   tags$li("Other sections of the app require a patient to be selected. Clicking a patient in the table populates this field and enables searching.")
+                                                                   tags$li("Other sections of the app require a patient to be selected. Clicking on the seach button for patient in the row begins the search process.")
                                                                  )
                                                           )
                                                         ),
@@ -633,14 +612,14 @@ ui <- fluidPage(
                                                         tags$hr(),
                                                         fluidRow( 
                                                           column(width=5,
-                                                                 tags$img(src = "images/Finder/finder9.png", height = '250px', width = '400px')),
+                                                                 tags$img(src = "images/Finder/finder9.png", height = '150px', width = '400px')),
                                                           column(width=7,
                                                                  tags$b("Patient Search from Selected Cohort"),
                                                                  tags$br(),
                                                                  tags$ol(
-                                                                   tags$li("Filtering cohort subsets table below"),
-                                                                   tags$li("Select a patient of interest by clicking row on table"),
-                                                                   tags$li("Search for specific patient: retrieves all clinical and encounter data for selected patient for use in other sections")
+                                                                   tags$li("Filtering cohort subsets table below. In this example, 'Male' patients are selected only in addition to an age range."),
+                                                                   tags$li("The second row is our patient of interest"),
+                                                                   tags$li("Click on the Search button in the last column: retrieves all clinical and encounter data for selected patient for use in other sections")
                                                                     )
                                                           )
                                                         )
@@ -708,7 +687,6 @@ ui <- fluidPage(
                                                           )
                                                         )
                                                       ) #end fluidPage
-                                    
                                                         ), #end Report help tab
                                              tabPanel("Encounter Timeline",
                                                       tags$br(),
@@ -737,12 +715,238 @@ ui <- fluidPage(
                                                                    tags$li("All options here are from what is available for the selected patient based on his/her encounter history. Selecting from these list will add all encounters of these types to the timeline.")
                                                                  )
                                                             )
-                                                          )  
+                                                          ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Timeline/timeline3.png", width = '400px')),
+                                                          column(width=6,
+                                                                 tags$b("Timeline Options Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Inveractive timeline visualization of encounters for selected patient. Can scroll left and right, zoom in and out, and select items by clicking on them. Encounter items are described by their Visit Type text"),
+                                                                   tags$li("All Visit Types (e.g., Inpatient Visit) selected in the dropdown are included in the visualization plot"),
+                                                                   tags$li("All Admitting Concept Types (e.g., Inpatient Hospital) selected in the dropdown are included in the visualization plot"),
+                                                                   tags$li("All Discharge Concept Types (e.g., Home) selected in the dropdown are included in the visualization plot")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Timeline/timeline4.png", width = '400px')),
+                                                          column(width=6,
+                                                                 tags$b("Timeline Selections"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Buttons to automatically navigate timeline. Fit All Encounters will navigate the timeline to put all items on screen (note this can increase height of plot by a lot). Focus Past Year will focus the timeline to the previous year (e.g., 2017)."),
+                                                                   tags$li("All encounter items in the timeline can be selected. Here the third Outpatient Visit is selected for the current patient. Clicking on the timeline item populates information about the encounter below."),
+                                                                   tags$li("All information covered in the timeline for the encounter is displayed in the Encounter Information section"),
+                                                                   tags$li("All clinical data recorded during the encounter is contained within a table separated by tabs of each domain."),
+                                                                   tags$li("These tables contain pre-selected columns pertinent to the selected domain (e.g., 'Condition Status Type' for Condition) "),
+                                                                   tags$li("Clicking CSV or Excel buttons on each tab will allow for downloading the table in the affiliated format.")
+                                                                 )
+                                                          )
+                                                        )
                                                         )# end fluidPage
                                                       ), #end Timeline help tab
                                              tabPanel("Data Explorer",
-                                                      tags$br()
-                                                      ) #end Explorer help tab
+                                                      tags$br(),
+                                                      fluidPage(
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer1.png",width = '450px')),
+                                                          column(width=6,
+                                                                 tags$b("Main Explorer Screen"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("The Data Explorer section allows users to explore trends in categorical and numeric clinical data for a selected patient (in this case patient id 9000000). There are 3 ways in which to explore: i) Targeted: one modality at a time; ii) Multiplex: multiple modalities plotted along the same x-axis (i.e., time); and iii) Multiplex Timeline: multiple modalities plotted on a grouped timeline visualization. ")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer2.png", width = '650px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Categorical"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("The Targeted explorer option plots data based on clinical modality at a time (e.g. Conditions or Measurements). For all categorical data (Conditions, Devices, Medications, and Procedures), these are plotted as an interactive timeline. "),
+                                                                   tags$li("For the timeline there are two view types possible: Event will display each item as a single time point; Range will plot the item from start-to-end period if that information exists (note these are not always accurate) "),
+                                                                   tags$li("Users can select items of each modality from the dropdown to include in the plot. Only concepts recorded for the selected patient are available.")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer3.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Categorical"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Timeline visualization automatically produced containing elements selected in the dropdown list in #2. As with other timelines, this is completely interactive."),
+                                                                   tags$li("Only items from the dropdown list are included in the timeline. These items are populated directly from patient-speicific concepts.")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer4.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Categorical"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("If Range option View Type is selected, the concept items in the timeline are displayed based on a range if available "),
+                                                                   tags$li("For items without an end date, they are still displayed as an Event (or single time point)"),
+                                                                   tags$li("Items with a range (e.g., Ulcerative Colitis) are displayed as a bar across the time period")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer5.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Categorical"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("All items in the timeline can be selected by clicking"),
+                                                                   tags$li("Information pertaining to the selected concept are displayed")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer6.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Numeric"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Domains that contain numeric data, specifically Measurements and Observations (although the latter is a mix), are first displayed as a frequency table with the number of recorded events for each item."),
+                                                                   tags$li("Items in the frequency table can be selected by clicking to automatically produce a line plot")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer7.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Numeric"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Select an item from the frequency table to view trends over time for that data concept ('C reactive protein [Mass/volume] in Serum or Plasma' selected in this case)"),
+                                                                   tags$li("An interactive line plot of all data points for the selected patients in the selected data concept is automatically produced"),
+                                                                   tags$li("High/Low values are automatically colored and coded based on the internal range system"),
+                                                                   tags$li("Hovering over each data point displays the value")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer8.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Explorer Mode"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Multiplex mode: display multiple types of data on the same time scale plot"),
+                                                                   tags$li("Categorical data can be selected in which items are displayed as a dot plot"),
+                                                                   tags$li("Numerical data can be selected in which terms are displayed as a line plot")
+                                                                   
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer9.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Explorer Mode Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Numeric data types (Measurements and Observations) can be selected based on what was measured for the selected patient"),
+                                                                   tags$li("Categorical data types (all others) can be selected in the same fashion")
+                                                                   
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer10.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Explorer Mode Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("The interactive multiplex plot is populated with selected items. Users can zoom in by clicking and dragging a section. All other items are then zoomed in at the same scale. Double clicking returns to original scale. Plots can be downloaded by hovering over the image and selecting 'Download plot as png'."),
+                                                                   tags$li("All items selected above are displayed in the legend. Categorical data are as dot plots on the top.")
+                                                                   
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer11.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Timeline Explorer Mode"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("In the Multiplex Timeline Explorer mode, multiple types of data are displayed on the same time scale in a timevis plot."),
+                                                                   tags$li("All data types can be selected and included based on data available from the selected patient")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer12.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Timeline Explorer Mode Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Categorical data can be selected like before"),
+                                                                   tags$li("Numeric data can be selected as well like before")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer13.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Timeline Explorer Mode Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("All selected items for the selected patient are displayed in a timevis plot grouped by domain. This is interactive with the same options available as before"),
+                                                                   tags$li("Data can be viewed as an Event or Range as before"),
+                                                                   tags$li("All data items can be selected by clicking"),
+                                                                   tags$li("Information for the selected data item are displayed above the plot")
+                                                                 )
+                                                          )
+                                                        )
+                                                        
+                                                      ) #end fluidPage
+                                             ) #end Explorer help tab
                                  ) #end help_pages Tabset panel
                                  ) #end Help section mainPanel
                                  ), #end Help section tab
@@ -757,29 +961,48 @@ ui <- fluidPage(
                                  p(HTML("The Centers for Medicare and Medicaid Services (CMS) have released a synthetic clinical dataset <a href='https://www.cms.gov/Research-Statistics-Data-and-Systems/Downloadable-Public-Use-Files/SynPUFs/DE_Syn_PUF.html'>DE-SynPUF</a> in the public domain with the aim of being reflective of the patient population but containing no protected health information. The OHDSI group has underwent the task of converting these data into the <a href='https://github.com/OHDSI/ETL-CMS'>OMOP CDM format </a>. Users are certainly able to set up this configuration on their own system following the instructions on the GitHub page. We obtained all data files from the <a href='ftp://ftp.ohdsi.org/synpuf'> OHDSI FTP server</a> (accessed June 17th, 2018) and created the CDM (DDL and indexes) according to their  <a href = 'https://github.com/OHDSI/CommonDataModel/tree/master/PostgreSQL'>official instructions</a>, but modified for MySQL. For space considerations, we only uploaded one million rows of each of the data files. The sandbox server is a Rshiny server running as an Elastic Compute Cloud (EC2) instance on Amazon Web Services (AWS) querying a MySQL database server (AWS Aurora MySQL). ")),
                                  tags$br(),
                                  tags$h6("Example Patient"),
-                                 p(HTML("As the DE-SynPUF data does not contain patient measurement results, we generated a profile for a patient with Chron's Disease with representative clinical data (e.g., disease codes and lab test results) for illustrative purposes. Users can recreate this example patient using the script <a href = ''> found here </a>. The script is formatted for a MySQL database.")),
+                                 p(HTML("As the DE-SynPUF data does not contain patient measurement results, we generated a profile for a patient with Chron's Disease with representative clinical data (e.g., disease codes and lab test results) for illustrative purposes. Users can recreate this example patient using the script <a href = 'https://github.com/BenGlicksberg/PatientExploreR/blob/dev/data/new_pt_insert_commands.txt'> found here </a>. The script is formatted for a MySQL database.")),
+                                 tags$h5("Who We Are"),
+                                 p(HTML("PatientExploreR was created by Benjamin Glicksberg (ben.glicksberg@gmail.com) while working as a post-doctoral scholar in the lab of <a href = 'http://buttelab.ucsf.edu/'> Dr. Atul Butte </a> at UCSF within the <a href = 'http://bakarinstitute.ucsf.edu/'>Bakar Computaitonal Health Sciences Institute </a>. This project was a collaboration between many individuals (see Manuscript Information) from UCSF, Columbia University, and the Icahn School of Medicine at Mount Sinai.")),
                                  tags$hr()
                                  ),
-                        tabPanel("Download App",
-                                 fluidRow(align="center",tags$h4("Download App"),hr(width=100)),
+                        tabPanel("Configuration",
+                                 fluidRow(align="center",tags$h4("Configuration"),hr(width=100)),
                                  tags$br(),
                                  style = "margin-left:250px; max-width:1000px; margin-right:250px",  
                                  tags$h5("Source Files"),
-                                 p(HTML("<a href = ''> GitHub Repository </a>")),
+                                 p(HTML("<a href = 'https://github.com/BenGlicksberg/PatientExploreR'> GitHub Repository </a>")),
                                  tags$br(),
                                  tags$h5("Requirements"),
-                                 tags$p("TBD"),
-                                 tags$br(),
+                                 tags$ul(
+                                   tags$li("Personal Computer or Server with connection to internet"),
+                                   tags$li("R"),
+                                   tags$li("All required packages (see Install.R)"),
+                                   tags$li("Database software (either: MySQL, PostgreSQL, Amazon Redshift, Microsoft SQL Server, Microsoft Parallel Data Warehouse, Google BigQuery"),
+                                   tags$li("Access to Electronic Health Record data (recommended for use with a de-identified version) that is properly formatted to OMOP Common Data Model v5")
+                                 ),
                                  tags$h5("Installation"),
-                                 tags$p("TBD"),
-                                 tags$br()
+                                 tags$ol(
+                                   tags$li("Download app from GitHub (see Source Files)"),
+                                   tags$li("Navigate to directory and run Install.R (Rscript Install.R) to install all required packages"),
+                                   tags$li("(Optional) Create .Renviron file in directory with database credentials (Note: this can be done in the app itself). See section below for formatting this file."),
+                                   tags$li("Open app using either Rstudio (Run App) or from command line: R -e \"shiny::runApp('PatientExploreR.R')\", then navigate to the IP address after \"Listening on…\" using a web browser.")
+                                   ),
+                                 tags$br(),
+                                 tags$h6("Storing credentials"),
+                                 HTML("For quick connection, users can quickly load and save their credentials to connect to EHR database within an R environment file (.Renviron). Either this file can be created after the credentials are entered in the input fields (Save Credentials button) which will automatically create this file in the directory of interest. Alternatively, users can create an .Renviron file the project directory in the following format:<br>
+                                        driver = ' ' <br>
+                                        host = ' ' <br>
+                                        username= ' ' <br>
+                                        password = ' ' <br>
+                                        dbname = ' ' <br>
+                                        port = ' '<br>
+                                        <br>
+                                        Full instructions on these connection parameters can be found from the OHDSI consortium's <a href= 'https://github.com/OHDSI/DatabaseConnector'> Database Connector <\a> GitHub page.")
                         )
              )
-  ) # end NavbarPage
-
+    ) # end NavbarPage
 ) # end UI
-
-
 
 
 ##############################################################
@@ -788,8 +1011,7 @@ ui <- fluidPage(
 
 server <- function(input, output,session) {
 
-if (!interactive()) sink(stderr(), type = "output")  ## *** needed?
-source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
+if (!interactive()) sink(stderr(), type = "output") 
   
   
   ############################
@@ -863,7 +1085,8 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
                                         server = input$sqlhost,
                                         user = input$sqlid,
                                         password = input$sqlpass,
-                                        schema = input$sqldb)
+                                        schema = input$sqldb,
+				                                port = input$sqlport)
       
       # close db connection after function
       on.exit(DatabaseConnector::disconnect(con))
@@ -923,6 +1146,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     disable("driver_picker")
     disable("sqlport")
     disable("load_credentials")
+    disable("save_credentials")
     
     username <- input$sqlid
     password <- input$sqlpass
@@ -935,13 +1159,12 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     
     ## load driver
     if (driver=="mysql") {
-      library("RMySQL")
+      suppressPackageStartupMessages(library("RMySQL"))
     } else if (driver %in% c("oracle", "postgresql", "redshift", "sql server", "pdw", "bigquery")) {
-      library("DatabaseConnector")
-      library("SqlRender")
+      suppressPackageStartupMessages(library("DatabaseConnector"))
+      suppressPackageStartupMessages(library("SqlRender"))
     }
   
-    
     connection <- checkOMOPconnection(driver, username,password,host,dbname, port)
    
  if(connection==TRUE){ ### if connection can be made
@@ -973,11 +1196,16 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
         
     shinyjs::show("intro_help_panel")
 
-  withProgress(message = "Loading data...", min = 0, max = 2, value = 0, { 
+  withProgress(message = "Loading data...", min = 0, max = 3, value = 0, { 
     incProgress(1, detail = "Data Ontology...")
-
-    # check for RDS here // if exists message ****
-   dataOntology <<- make_data_ontology()
+   
+    if (file.exists(paste0(getOption("currentPath"), "dataOntology.rds")) ) {
+      incProgress(1, detail = "Data Ontology found. Loading from .rds file...")
+    } else { 
+      incProgress(1, detail = "Data Ontology not found. Creating from source...")
+      }
+    
+    dataOntology <<- make_data_ontology()
     
     incProgress(1, detail = "Patient demographics...")
     pts_demographics <<- getDemographics()
@@ -1014,6 +1242,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
         )
         shinyjs::enable("login")
         enable("load_credentials")
+        enable("save_credentials")
         enable("sqlid")
         enable("sqlpass")
         enable("sqlhost")
@@ -1040,6 +1269,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
       )
       shinyjs::enable("login")
       enable("load_credentials")
+      enable("save_credentials")
       enable("sqlid")
       enable("sqlpass")
       enable("sqlhost")
@@ -1073,7 +1303,6 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     pt_data_report$df = data.table()
     multiplex_timeline$df = data.table()
     
-    # reset option path (current path set)
     enable("sqlid")
     enable("sqlpass")
     enable("sqlhost")
@@ -1082,6 +1311,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     enable("sqlport")
     
     enable("load_credentials")
+    enable("save_credentials")
     
     click("reset_filter")
     pt_id_selected(NULL)
@@ -1096,7 +1326,6 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
   
   
   ### LOAD CREDENTIALS
-
   observeEvent(input$load_credentials, {
     # check if .Renviron exists in current directory
     if (file.exists(paste0(getOption("currentPath"),".Renviron"))){
@@ -1130,8 +1359,55 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
   })    
     
   ### SAVE CREDENTIALS
-  #TBD  
+  observeEvent(input$save_credentials, {
+    #credit: https://github.com/daattali/shinyalert
+    shinyalert(
+      title = "Save Credentials?",
+      text = "Warning: this will create or overwrite the .Renviron file in current directory. Proceed?",
+      closeOnEsc = TRUE,
+      closeOnClickOutside = FALSE,
+      html = FALSE,
+      type = "warning",
+      showConfirmButton = TRUE,
+      showCancelButton = TRUE,
+      confirmButtonText = "OK",
+      confirmButtonCol = "#AEDEF4",
+      cancelButtonText = "Cancel",
+      timer = 0,
+      imageUrl = "",
+      animation = TRUE,
+      callbackR = function(x) { 
+        if (x==TRUE) {
+          # SAVE CREDENTIALS if OK is selected for Warning shinyalert
+          if (input$driver_picker=="MySQL") {
+            drv <- "mysql"
+          } else if (input$driver_picker == "PostgreSQL") {
+            drv <- "postgresql"
+          } else if (input$driver_picker == "Oracle") {
+            drv <- "oracle"
+          } else if (input$driver_picker == "Amazon Redshift") {
+            drv <- "redshift"
+          } else if (input$driver_picker == "Microsoft SQL Server") {
+            drv <- "sql server"
+          } else if (input$driver_picker == "Microsoft Parallel Datawarehouse") {
+            drv <- "pdw"
+          } else if (input$driver_picker == "Google BigQuery") { 
+            drv <- "bigquery"
+          }  
+            write(paste0("driver = '", drv, "'\n",
+                         "host = '", input$sqlhost, "'\n",
+                         "username = '", input$sqlid, "'\n",
+                         "password = '", input$sqlpass, "'\n",
+                         "dbname = '", input$sqldb, "'\n",
+                         "port = '", input$sqlport, "'\n"),
+                  file = paste0(getOption("currentPath"),".Renviron"))
+              } 
+        
+        }
+    )
+  })
 
+  
   ## shiny-directory-input
   # https://github.com/wleepang/shiny-directory-input
   observeEvent(
@@ -1166,16 +1442,13 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     
   output$intro_help<-renderUI({
     fluidPage(
-      
-  icon("question-circle","fa-2x"),"First time user? Check out the ",
-  actionLink("gotoHelp2","Help"), "page or start the ", actionLink("gotoTutorial","Tutorial")
+      icon("question-circle","fa-2x"),"First time user? Check out the ",
+      actionLink("gotoHelp2","Help"), "page."
     )
   })
   
   
-  
   ##### HOME BUTTONS
-  
   observeEvent(input$gotoAbout, {
     updateTabsetPanel(session=session,"inTabset",selected = "About")
   })
@@ -1184,8 +1457,8 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     updateTabsetPanel(session=session,"inTabset",selected = "Help")
   })
   
-  observeEvent(input$gotoDownloadApp, {
-    updateTabsetPanel(session=session,"inTabset",selected = "Download App")
+  observeEvent(input$gotoConfiguration, {
+    updateTabsetPanel(session=session,"inTabset",selected = "Configuration")
   })
   
   
@@ -1209,7 +1482,6 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
   observeEvent(input$gotoExplorer, {
     updateTabsetPanel(session=session,"inTabset",selected = "Data Explorer")
   })
-  
 
   
   ############################
@@ -1317,9 +1589,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
 
 
   # select all terms for mode/vocab selection
-
   observeEvent(input$criteria_select_all_button_finder,{
-
     rows_sel = input$finder_term_picker_rows_all
     toaddstrings<-paste(finder_term_table$df[rows_sel,]$vocabulary_id,finder_term_table$df[rows_sel,]$concept_code,sep=":")
     newaddstrings<- setdiff(toaddstrings, vocab_term$l)
@@ -1332,10 +1602,9 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
       tmp_vf_tbl = data.table(vocabulary = vocabularies_split, term = codes_split)
       selected_finder_term_table$df = rbind(selected_finder_term_table$df, tmp_vf_tbl)
     }
-    
-    
   })
 
+  # remove all terms for mode/vocab selection
   observeEvent(input$criteria_select_none_button_finder,{
     rows_sel = input$finder_term_picker_rows_all
     toremovestrings<-paste(finder_term_table$df[rows_sel,]$vocabulary_id,finder_term_table$df[rows_sel,]$concept_code,sep=":")
@@ -1377,7 +1646,6 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
 
       if(sel_selected() == TRUE){
         enable("criteria_remove_button")
-
       }else{
         disable("criteria_remove_button")
       }
@@ -1476,6 +1744,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
      disable("criteria_select_none_button_finder")
      disable("search_func_type")
      disable("search_strategy")
+     disable("show_plots")
      patient_list <- findPatients(selected_terms, func_type, search_strat)
 
      if(length(patient_list)>0){
@@ -1488,7 +1757,6 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
      pts_search_found$ethnicities <- unique(pts_demographics[person_id %in% patient_list]$Ethnicity)
      pts_search_found$ages <- c(min(pts_demographics[person_id %in% patient_list]$age),max(pts_demographics[person_id %in% patient_list]$age))
      
-   # 
    shinyjs::hide("criteria_search_open")
    shinyjs::show("pts_found_open")
      }else{
@@ -1506,6 +1774,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
    enable("criteria_select_none_button_finder")
    enable("search_func_type")
    enable("search_strategy")
+   enable("show_plots")
 
 
   })
@@ -1524,9 +1793,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     shinyjs::hide("pts_found_open")
     shinyjs::show("criteria_search_open") 
 
-
-
-    
+   
     vocab_term$l <- list()
   pts_search_found <-reactiveValues(pt_list = list(),genders=list(),races=list(),statuses=list(),ethnicities=list(),ages=list())
   selected_finder_term_table$df <- data.table(vocabulary = character(),term = character())
@@ -1538,9 +1805,7 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
 
     updatePickerInput(session, inputId = "finder_domain_picker",selected = "Condition")
 
-  # 
   })
-
 
    
   output$pts_found_display<-renderUI({ ### change renderUI to cohort_found ranges
@@ -1550,151 +1815,34 @@ source("PatientExploreR-OMOP_functions.R", local = TRUE) ## here or global?
     single_races = single_races[!grepl(",",single_races)]
 
     fluidPage(
-      fluidRow(tags$h4("Filter Cohort:")),
-      fluidRow(
-          column(3,
-                 sliderInput("slider_age", label = "Age", min = pts_search_found$ages[1],
-                             max = pts_search_found$ages[2], value = c(pts_search_found$ages[1], pts_search_found$ages[2]))
-          ),
-          column(2,
-                 pickerInput(
-                   inputId = "GenderFilter",
-                   label = "Gender",
-                   choices = sort(pts_search_found$genders),
-                   selected = sort(pts_search_found$genders),
-                   options = list(
-                     size = 25,
-                     `selected-text-format` = "count > 1"
-                   ),
-                   multiple = TRUE
-                 ) # End GenderFilter
-          ),
-          column(2,
-                 pickerInput(
-                   inputId = "StatusFilter",
-                   label = "Status",
-                   choices = sort(pts_search_found$statuses),
-                   selected = sort(pts_search_found$statuses),
-                   options = list(
-                     size = 25,
-                     `selected-text-format` = "count > 1"
-                   ),
-                   multiple = TRUE
-                 ) # End StatusFilter
-          ),
-          column(3,
-                 pickerInput(
-                   inputId = "RaceFilter",
-                   label = "Race",
-                   choices = sort(pts_search_found$races),
-                   selected = sort(pts_search_found$races),
-                   options = list(
-                     size = 25,
-                     `selected-text-format` = "count > 1"
-                   ),
-                   multiple = TRUE
-                 ) # End RaceFilter
-          ),
-          column(2,
-                 pickerInput(
-                   inputId = "EthnicityFilter",
-                   label = "Ethnicity",
-                   choices = sort(pts_search_found$ethnicities),
-                   selected = sort(pts_search_found$ethnicities),
-                   options = list(
-                     size = 25,
-                     `selected-text-format` = "count > 1"
-                   ),
-                   multiple = TRUE
-                 ) # End EthnicityFilter
-          )# end column
-      ),
       hr(),
       fluidRow(
-        column(2,
-               actionButton("reset_filter", "Reset Filters")
-        ),
-        column(2,
+        column(3,
                downloadButton(
                  outputId = "save_cohort",
                  label = "Export Cohort"
                )
         ),
-        column(2,
+        column(3,
                actionButton("show_plots", "Show Plots")
-        ),
-        column(2,
-               tags$b("Selected Patient ID: ")
-               ),
-        column(2,
-               verbatimTextOutput("pt_id_table_selected",placeholder=TRUE)
-        ),
-        column(2,
-              disabled(actionButton("search_patient_button2", strong("Search")))
         )
-
       ),
       hr(),
       
       shinyjs::hidden(
         div(id="finder_plots",
       fluidRow(
-        plotlyOutput("cohort_plots")
+        plotlyOutput("cohort_plots") %>% withSpinner()
+        # credit: https://github.com/andrewsali/shinycssloaders
       )
-        ))
-      ,
-      fluidRow(
-        column(width=7,
-               column(width=2,
-                      icon("arrow-down", "fa-3x")),
-               column(width=8,
-                      tags$h4("Select patient from table"))
-        ),
-        column(width=5,
-               column(width=7,
-                      tags$h4("Get patient data")),
-               column(width=2,
-                      icon("arrow-up", "fa-3x"))
-        )
-      ),
+        )),
       fluidRow(
        DT::dataTableOutput("found_cohort_table")
       )
-
-
     )
-
 
   })
   
-  observeEvent(input$reset_filter,{### change to cohort_found ranges
-
-    single_races = unique(pts_demographics[person_id %in% pts_search_found$l]$Race)
-    single_races = single_races[!grepl(",",single_races)]
-
-    updateSliderInput(session, inputId="slider_age",  value = c(pts_search_found$ages[1], pts_search_found$ages[2]))
-    updatePickerInput(session,inputId ="GenderFilter",choices = sort(pts_search_found$genders), selected = sort(pts_search_found$genders))
-    updatePickerInput(session,inputId ="StatusFilter",choices = sort(pts_search_found$statuses), selected = sort(pts_search_found$statuses))
-    updatePickerInput(session,inputId ="RaceFilter",choices = sort(pts_search_found$races), selected = sort(pts_search_found$races))
-    updatePickerInput(session,inputId ="EthnicityFilter",choices = sort(pts_search_found$ethnicities), selected = sort(pts_search_found$ethnicities))
-  })
-
-
-
-sel_cohort <- reactive({!is.null(input$found_cohort_table_rows_selected)}) 
- 
-  observe({
-    req(logged_in() == TRUE)
-
-    if(sel_cohort() == TRUE){
-      enable("search_patient_button2")
-      pt_id_clicked_from_table(global_cohort_found$df[input$found_cohort_table_rows_selected,person_id])
-    }else{
-      disable("search_patient_button2")
-      pt_id_clicked_from_table(NULL)
-    }
-    output$pt_id_table_selected <- renderText({pt_id_clicked_from_table()})
-  })
 
 
   observeEvent(input$show_plots,{
@@ -1707,57 +1855,19 @@ sel_cohort <- reactive({!is.null(input$found_cohort_table_rows_selected)})
 
   })
 
-
-
-
-
-  observeEvent(input$search_patient_button2, {
-    disable_during_search()
-    
-     pt_id = pt_id_clicked_from_table()
- 
-     withProgress(message = "Loading patient data...", min = 0, max = 1, value = 0, {
-
-       incProgress(1, detail = "Loading data...")
-      pt_id_selected(pt_id) # set reactiveVal pt_id
-      pt_data_selected$l=get_all_pt_data(pt_id_selected()) #save pt_data globally
-      pt_data_report$df = generate_pt_report(pt_data_selected$l) # generate pt_report here
-      multiplex_timeline$df <- format_multiplex_timeline(pt_data_report$df) # generate multiplex data from pt_report
-      showNotification("Patient data loaded.")
-      updateTabsetPanel(session=session,"inTabset",selected = "Overall Report")
-     })
-     
-  enable_after_search()
-
-  })
-
-
+  
   disable_during_search <-function(){
-    disable("search_patient_button2")
     disable("finder_type")
     disable("criteria_search_button_finder")
     disable("criteria_search_button_reset")
-    disable("slider_age")
-    disable("GenderFilter")
-    disable("StatusFilter")
-    disable("RaceFilter")
-    disable("EthnicityFilter")
-    disable("reset_filter")
     disable("save_cohort")
     disable("show_plots")
   }
 
 enable_after_search <-function(){
-  enable("search_patient_button2")
   enable("finder_type")
   enable("criteria_search_button_finder")
   enable("criteria_search_button_reset")
-  enable("slider_age")
-  enable("GenderFilter")
-  enable("StatusFilter")
-  enable("RaceFilter")
-  enable("EthnicityFilter")
-  enable("reset_filter")
   enable("save_cohort")
   enable("show_plots")
  }
@@ -1765,7 +1875,7 @@ enable_after_search <-function(){
   
   
   output$cohort_plots <- renderPlotly({
-    cohort_found = global_cohort_found$df
+    cohort_found = global_cohort_found$df[input$found_cohort_table_rows_all]
     
     req(nrow(cohort_found)>0)
 
@@ -1804,8 +1914,6 @@ enable_after_search <-function(){
 
 
     cohort_race = cohort_found[,c("person_id","Race")]
-    #cohort_race[grepl(",",Race),"Race"] = "Multi-racial"
-
 
     raceTitle <- list(
       text = "Race",
@@ -1842,8 +1950,6 @@ enable_after_search <-function(){
 
     ethnicityData <- data.table(cohort_found %>%  dplyr::count(Ethnicity) %>%  mutate(prop = prop.table(n)))
 
-
-
     p3 <- plot_ly(ethnicityData, x=~Ethnicity, y = ~prop, type = 'bar', color = ~Ethnicity, text = ~n)  %>%
       layout(xaxis = list(title="",tickangle = 90), showlegend=FALSE, annotations = ethnicityTitle)
 
@@ -1867,10 +1973,17 @@ enable_after_search <-function(){
 
     subplot(p0,p1, p2,p3, p4, nrows = 1, margin = 0.02, widths = c(0.3,0.15, 0.3, 0.15, 0.1)) %>% hide_legend() %>% layout(margin = list(b = 200,l=20))
 
-
   })
 
 
+  shinyInput <- function(FUN, len, id, ...) { 
+    # credit: https://stackoverflow.com/questions/45739303/r-shiny-handle-action-buttons-in-data-table
+    inputs <- character(len)
+    for (i in seq_len(len)) {
+      inputs[i] <- as.character(FUN(paste0(id, i), ...))
+    }
+    inputs
+  }  
 
 
   output$found_cohort_table <- DT::renderDataTable({
@@ -1881,31 +1994,56 @@ enable_after_search <-function(){
     cohort_found = pts_demographics[person_id %in% pt_list_found]
     cohort_found = cohort_found[,-c("death_date")]
 
-     # age filter
-     cohort_found=cohort_found[(cohort_found$age >= as.numeric(input$slider_age[1]) & cohort_found$age <= as.numeric(input$slider_age[2])),]
+    cohort_found$age = as.integer(cohort_found$age)
+    cohort_found$year_of_birth = as.integer(cohort_found$year_of_birth)
+    cohort_found$Gender = as.factor(cohort_found$Gender)
+    cohort_found$Race = as.factor(cohort_found$Race)
+    cohort_found$Ethnicity = as.factor(cohort_found$Ethnicity)
+    cohort_found$Status = as.factor(cohort_found$Status)
     
-    # sex filter
-    cohort_found=cohort_found[cohort_found$Gender %in% input$GenderFilter,]
-
-    # status filter
-    cohort_found=cohort_found[cohort_found$Status %in% input$StatusFilter,]
-
-    # race filter
-    cohort_found=cohort_found[grepl(paste(input$Race,collapse="|"),cohort_found$Race),] # deal with multiple-races in record
-
-
-    # enthnicity filter
-    cohort_found=cohort_found[cohort_found$Ethnicity %in% input$EthnicityFilter,]
-
     global_cohort_found$df = cohort_found
-
+    
+    
+    cohort_found <- cohort_found %>% mutate(Search = shinyInput(actionButton, nrow(cohort_found), 'button_', label = NULL,icon = icon("search", lib = "glyphicon"), onclick = 'Shiny.onInputChange(\"select_pt_button\",  this.id)' ))
+    
     datatable(cohort_found,
+              filter = "top",
               rownames = FALSE,
               selection = 'single',
-              style = "bootstrap")
-
+              style = "bootstrap",
+              escape = FALSE,
+              options = list(
+                columnDefs = list(list(targets=7, searchable = FALSE))
+              )
+        )
   })
 
+  
+  observeEvent(input$select_pt_button, {
+    selectedRow <- as.numeric(strsplit(input$select_pt_button, "_")[[1]][2])
+    disable_during_search()
+    
+    withProgress(message = "Loading patient data...", min = 0, max = 1, value = 0, {
+      
+      incProgress(1, detail = "Loading data...")
+      pt_id_selected(global_cohort_found$df[selectedRow]$person_id) # set reactiveVal pt_id #### <- !! issue here can't use global_chorot_found
+      
+      pt_data_selected$l=get_all_pt_data(pt_id_selected()) #save pt_data globally
+      pt_data_report$df = generate_pt_report(pt_data_selected$l) # generate pt_report here
+      
+      ### functionalize this
+      shinyjs::hide("login_message_explore", anim = FALSE)
+      shinyjs::show("explore_info_open", anim = FALSE)
+      ######
+      
+      multiplex_timeline$df <- format_multiplex_timeline(pt_data_report$df) # generate multiplex data from pt_report
+      showNotification("Patient data loaded.")
+      updateTabsetPanel(session=session,"inTabset",selected = "Overall Report")
+    })
+    
+    enable_after_search()
+    
+  })
   
   output$save_cohort <- downloadHandler(
 
@@ -1913,7 +2051,7 @@ enable_after_search <-function(){
       "saved_cohort.csv"
     },
     content = function(file) {
-      write.csv(global_cohort_found$df, file, row.names = FALSE,quote=FALSE)
+      write.csv(global_cohort_found$df[input$found_cohort_table_rows_all], file, row.names = FALSE,quote=FALSE)
     }
   )
 
@@ -2125,8 +2263,6 @@ enable_after_search <-function(){
                    multiple = TRUE
                  ) 
                )
-          
-          
         )
     
       ) # end fluidRow
@@ -2145,13 +2281,19 @@ enable_after_search <-function(){
       # retrieve patient report from global variable (filtered report)
       pt_report = filtered_pt_report()
       pt_report = pt_report[order(pt_report$Date),]
+      pt_report = pt_report[,c("Date","Type","Event","Value")]
+      pt_report$Type = as.character(pt_report$Type)
+      pt_report$Event = as.character(pt_report$Event)
+      pt_report$Value = as.character(pt_report$Value)
 
       shiny::validate(need(!is.null(pt_report), message = FALSE))
-      datatable(pt_report[,c("Date","Type","Event","Value")],
+      datatable(pt_report,
+                filter = "top",
                 rownames = FALSE,
                 selection = 'single',
                 style = "bootstrap",
                 options = list(
+                  columnDefs = list(list(targets= c(1,2,3), searchable = FALSE)),
                   pageLength = 10
                 )) 
 
@@ -2159,14 +2301,13 @@ enable_after_search <-function(){
       })
   
 
-  
   output$export_report <- downloadHandler(
 
     filename = function() {
       paste(pt_id_selected(), "_report.csv", sep = "")
     },
     content = function(file) {
-      write.csv(filtered_pt_report(), file, row.names = FALSE,quote=FALSE)
+      write.csv(filtered_pt_report()[input$report_table_rows_all], file, row.names = FALSE,quote=FALSE)
     }
   )
 
@@ -2175,18 +2316,15 @@ enable_after_search <-function(){
   ######### TIMELINE #########
   ############################
   
-####################### 
   
   # Timeline info and filter subheader 
   output$timeline_filter_options <- renderUI({
     
     req(logged_in()==TRUE & !is.null(pt_id_selected()))
 
-
     encounters = pt_data_selected$l$Encounters
 
      fluidPage(
-       
        fluidRow( 
         column(width = 2,offset = 0, style='padding:0px;',
 
@@ -2203,7 +2341,7 @@ enable_after_search <-function(){
       ),
       fluidRow( # picker input row
         hr(),
-    column(width =4,
+          column(width =4,
            pickerInput( # Visit Type
              inputId = "VisitTypePicker",
              label = "Visit Types",
@@ -2218,8 +2356,8 @@ enable_after_search <-function(){
              ),
              multiple = TRUE
            )
-    ),
-    column(width =4,
+        ),
+        column(width =4,
            pickerInput( # Admitting Type
              inputId = "AdmittingTypePicker",
              label = "Admitting Concept Type",
@@ -2235,7 +2373,7 @@ enable_after_search <-function(){
              multiple = TRUE
            )
     ),
-  column(width =4,
+      column(width =4,
          pickerInput( # Discharge Type
            inputId = "DischargeTypePicker",
            label = "Discharge Concept Type",
@@ -2250,13 +2388,13 @@ enable_after_search <-function(){
            ),
            multiple = TRUE
          )
-  )
-),# end picker input row
+    )
+    ),# end picker input row
       fluidRow(column(width = 12,
+        # credit: https://github.com/daattali/timevis              
         timevisOutput("encounter_timeline")
-      )
+         )
       ),
-
       fluidRow(
                  # Timevis Buttons
                  div(id = "interactiveActions",
@@ -2269,16 +2407,12 @@ enable_after_search <-function(){
     fluidRow(
       hr()
     )
-
-
      )# end fluidPage
-
   })
   
 
   encounter_timeline_data <- reactive({
-
-
+    
     encounters = pt_data_selected$l$Encounters
 
     encounters=encounters[!is.na(visit_start_date)] # remove NA dates
@@ -2292,8 +2426,9 @@ enable_after_search <-function(){
   })
 
 
+  
   output$encounter_timeline<- renderTimevis({
-
+  # credit: https://github.com/daattali/timevis 
    encounters_timeline = encounter_timeline_data()
 
     req(nrow(encounters_timeline)>0)
@@ -2315,7 +2450,6 @@ enable_after_search <-function(){
 
   
 #### Timevis buttons
-
   observeEvent(input$fitAllEncounters, {
     fitWindow("encounter_timeline")
   })
@@ -2325,9 +2459,9 @@ enable_after_search <-function(){
     setWindow("encounter_timeline", current_date-365, current_date)
   })
 
-
-
-  output$timeline_title <- renderText({
+  
+### Timevis info
+output$timeline_title <- renderText({
     req(logged_in()==TRUE)
     
     if(!is.null(pt_id_selected())){
@@ -2340,23 +2474,23 @@ enable_after_search <-function(){
 
   
   #### clicking on encounter  
-  
-
   observeEvent(input$encounter_timeline_selected,{
    req(logged_in()==TRUE)
     tl_id <- input$encounter_timeline_selected
     timevis_encounters = encounter_timeline_data()
 
-	tl_id = as.integer(tl_id)
+	  tl_id = as.integer(tl_id)
 
     timevis_encounters$id = 1:nrow(timevis_encounters)
   
-  enc_id_selected(timevis_encounters[id == tl_id,]$visit_occurrence_id) #update selected encounter id
+    enc_id_selected(timevis_encounters[id == tl_id,]$visit_occurrence_id) #update selected encounter id
     req(!is.null(enc_id_selected()))
 
     shinyjs::show("encounter_selected_info_panel")
 
 
+    #### Modality-specific tables
+    
     output$encounter_conditions_table <- DT::renderDataTable({
       conditions <- pt_data_selected$l$Conditions
 
@@ -2365,8 +2499,13 @@ enable_after_search <-function(){
       conditions = conditions[,c("condition_concept_name","condition_type","condition_status_type","condition_concept_vocabulary","condition_concept_code","condition_source_vocabulary","condition_source_code","condition_start_date","condition_end_date")]
 
       datatable(conditions,
+                extensions = 'Buttons',
                 rownames = FALSE,
-                style = "bootstrap")
+                style = "bootstrap",
+                options = list(
+                  dom = 'Bfrtip',
+                  buttons = c('csv', 'excel')
+                ))
     })
 
     output$encounter_devices_table <- DT::renderDataTable({
@@ -2377,8 +2516,13 @@ enable_after_search <-function(){
       devices = devices[,c("device_concept_name","device_type","device_exposure_start_date","device_exposure_end_date","device_concept_vocabulary","device_concept_code","device_source_vocabulary","device_source_code")]
 
       datatable(devices,
+                extensions = 'Buttons',
                 rownames = FALSE,
-                style = "bootstrap")
+                style = "bootstrap",
+                options = list(
+                  dom = 'Bfrtip',
+                  buttons = c('csv', 'excel')
+                ))
     })
 
     output$encounter_measurements_table <- DT::renderDataTable({
@@ -2391,8 +2535,13 @@ enable_after_search <-function(){
       measurements = measurements[,c("measurement_concept_name","value_as_number","value_concept", "unit_concept", "measurement_type", "measurement_date","measurement_concept_vocabulary","measurement_concept_code","measurement_source_vocabulary","measurement_source_code")]
 
       datatable(measurements,
+                extensions = 'Buttons',
                 rownames = FALSE,
-                style = "bootstrap")
+                style = "bootstrap",
+                options = list(
+                  dom = 'Bfrtip',
+                  buttons = c('csv', 'excel')
+                ))
     })
     
         output$encounter_medications_table <- DT::renderDataTable({
@@ -2403,8 +2552,13 @@ enable_after_search <-function(){
           medications = medications[,c("medication_concept_name","refills","quantity","days_supply","drug_type","route_concept","drug_exposure_start_date","drug_exposure_end_date","medication_concept_vocabulary","medication_concept_code","medication_source_vocabulary","medication_source_code")]
 
           datatable(medications,
+                    extensions = 'Buttons',
                     rownames = FALSE,
-                    style = "bootstrap")
+                    style = "bootstrap",
+                    options = list(
+                      dom = 'Bfrtip',
+                      buttons = c('csv', 'excel')
+                    ))
         })
             output$encounter_observations_table <- DT::renderDataTable({
               observations <- pt_data_selected$l$Observations
@@ -2414,8 +2568,13 @@ enable_after_search <-function(){
               observations = observations[,c("observation_concept_name","value_as_number","value_as_string","value_concept","unit_source_value","observation_type","observation_concept_vocabulary","observation_concept_code","observation_source_vocabulary","observation_source_code")]
 
               datatable(observations,
+                        extensions = 'Buttons',
                         rownames = FALSE,
-                        style = "bootstrap")
+                        style = "bootstrap",
+                        options = list(
+                          dom = 'Bfrtip',
+                          buttons = c('csv', 'excel')
+                        ))
             })
 
     output$encounter_procedures_table <- DT::renderDataTable({
@@ -2426,31 +2585,36 @@ enable_after_search <-function(){
       procedures = procedures[,c("procedure_concept_name","procedure_type","procedure_date","procedure_concept_vocabulary","procedure_concept_code","procedure_source_vocabulary","procedure_source_code")]
 
       datatable(procedures,
+                extensions = 'Buttons',
                 rownames = FALSE,
-                style = "bootstrap")
-    })
+                style = "bootstrap",
+                options = list(
+                  dom = 'Bfrtip',
+                  buttons = c('csv', 'excel')
+                ))
+          })
 
    })
    
+  ######### End modality-specific tables
 
   output$pt_encounter_data_panel <- renderUI({
-
+   # plot encounter/visit type information (UI for page)
     req(logged_in()==TRUE & !is.null(pt_id_selected()))
 
     if(input$encounter_plot_type != "no_enc_selected"){
-  plotlyOutput("plotly_pt_encounter_data")
+       plotlyOutput("plotly_pt_encounter_data") %>% withSpinner()
     }
 
   })
 
 
   output$encounter_info_text <- renderUI({
+    # text information regarding selected encounter
     req(logged_in()==TRUE & !is.null(pt_id_selected()) & !is.null(enc_id_selected()))
 
     encounters <- pt_data_selected$l$Encounters
     encounters <- encounters[visit_occurrence_id == enc_id_selected()]
-
-
 
     fluidPage(
       fluidRow(tags$h4("Encounter Information: ")),
@@ -2522,6 +2686,7 @@ enable_after_search <-function(){
   ############################
   
   output$explorer_title <- renderText({
+    # header text for explorer
     req(logged_in()==TRUE)
     
     if(!is.null(pt_id_selected())){
@@ -2590,13 +2755,11 @@ enable_after_search <-function(){
                              DT::dataTableOutput("observations_explorer_table")) 
                 ) # end tabset Panel
         
-        
       ), #end fluidRow
       
       hr(),
-      #
-      uiOutput("timevispanel")
       
+      uiOutput("timevispanel")
       
       ) # end fluidPage
       
@@ -3204,8 +3367,6 @@ enable_after_search <-function(){
     
   })
   
-
-  
   ### devices targeted
   output$devices_explorer_targeted_panel <- renderUI({
     
@@ -3345,19 +3506,16 @@ enable_after_search <-function(){
       
     )
     
-    
   })
   
   
   ################################################################ TARGETED DATA EXPLORER numeric visualization
   
-  
   output$timevispanel <- renderUI({
     if(input$dataset_type_targeted_explorer %in% c("Measurements","Observations")){
-      plotlyOutput('timevisnumeric', height = "400px")
+      plotlyOutput('timevisnumeric', height = "400px") %>% withSpinner()
     }
   })
-  
   
   
   output$timevisnumeric <- renderPlotly({
@@ -3552,13 +3710,13 @@ output$multiplot_panel <- renderUI({ ##
  multiplex_selected <-c(input$conditions_explorer_multiplex,input$medications_explorer_multiplex,input$procedures_explorer_multiplex ,input$measurements_explorer_multiplex,input$devices_explorer_multiplex,input$observations_explorer_multiplex)
 
   if(length(multiplex_selected)==1){
-    plotlyOutput('multiplot', height = "400px")
+    plotlyOutput('multiplot', height = "400px") %>% withSpinner()
   }else if(length(multiplex_selected)==2){
-    plotlyOutput('multiplot', height = "500px")
+    plotlyOutput('multiplot', height = "500px") %>% withSpinner()
   }else if(length(multiplex_selected)==3) {
-    plotlyOutput('multiplot', height = "800px")
+    plotlyOutput('multiplot', height = "800px") %>% withSpinner()
   }else if(length(multiplex_selected)>3) {
-    plotlyOutput('multiplot', height = "1000px")
+    plotlyOutput('multiplot', height = "1000px") %>% withSpinner()
   }
 
 })
