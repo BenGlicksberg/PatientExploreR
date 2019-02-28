@@ -71,11 +71,11 @@ a MySQL database.
  #### Storing Credentials
  
  For quick connection, users can quickly load and save their credentials to connect to EHR database within an R environment file (.Renviron). Either this file can be created after the credentials are entered in the input fields (Save Credentials button) which will automatically create this file in the directory of interest. Alternatively, users can create an .Renviron file the project directory in the following format:
-                                        driver = ' '
-                                        host = ' '
-                                        username= ' '
-                                        password = ' '
-                                        dbname = ' '
-                                        port = ' '
+>                                        driver = ' '
+>                                        host = ' '
+>                                        username= ' '
+>                                        password = ' '
+>                                        dbname = ' '
+>                                        port = ' '
                                         
-                                        Full instructions on these connection parameters can be found from the OHDSI consortium's [Database Connector](https://github.com/OHDSI/DatabaseConnector) GitHub page.
+Full instructions on these connection parameters can be found from the OHDSI consortium's [Database Connector](https://github.com/OHDSI/DatabaseConnector) GitHub page.
