@@ -53,7 +53,6 @@ ui <- fluidPage(
                                           fluidRow( # intro fluidRow
                                                    tags$h3("PatientExploreR Sandbox Server"),
                                                    tags$p("PatientExploreR interfaces with a relational database of EHR data in the Observational Medical Outcomes Partnership (OMOP) Common Data Model (CDM). This application produces patient-level interactive and dynamic reports and visualization of clinical data, without requiring programming skills.",align="left"),
-                                                   HTML(paste0(h5("All patient data are synthesized and contain ", tags$b("no Protected Health Information")))),
                                                    tags$br(),
                                                    fluidRow(
                                                       column(width=4, # Help button
@@ -65,9 +64,7 @@ ui <- fluidPage(
                                                       column(width=4, #Configuration button
                                                         actionButton("gotoConfiguration","",icon=icon("download","fa-5x"),lib="font-awesome"),
                                                         fluidRow(tags$h5("Configuration")))),         
-                                                   tags$br(),
-                                                   HTML(paste0(h5("To begin: click ",  tags$u(tags$b("Load Credentials")), "then", tags$u(tags$b("Login"))))),
-                                                   tags$hr()
+					tags$hr()
                                           ), # end intro fluidRow
                                           fluidRow(
                                             column(width=5, # Login column
