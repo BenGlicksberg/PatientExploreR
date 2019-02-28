@@ -1,30 +1,22 @@
 ####################
 # Ben Glicksberg
 # Butte Lab / UCSF
-# 2018
+# 2018-19
 ####################
-library(DBI)
-library(odbc)
-library(RMySQL)
-library(shiny)
-library(shinyWidgets)
-library(shinyjs)
-library(shinyalert)
-library(shinythemes)
-library(shinycssloaders)
-library(plotly)
-library(timevis)
-library(stringr)
-library(dplyr)
-
+suppressPackageStartupMessages(library(DBI))
+suppressPackageStartupMessages(library(shiny))
+suppressPackageStartupMessages(library(shinyWidgets))
+suppressPackageStartupMessages(library(shinyjs))
+suppressPackageStartupMessages(library(shinyalert))
+suppressPackageStartupMessages(library(shinythemes))
+suppressPackageStartupMessages(library(shinycssloaders))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(timevis))
+suppressPackageStartupMessages(library(stringr))
+suppressPackageStartupMessages(library(dplyr))
 
 options("currentPath" = paste0(getwd(),'/'))
 source("global.R")
-
-### this will not be in the main package as wd will be set by button
-#options("currentPath" = "/srv/shiny-server/patientexplorer/")
-#options("currentPath" = "/Users/bglicksberg/Desktop/Ben Glicksberg/Butte Lab/Projects/PatientExploreR/PatientExploreR/OMOP/PatientExploreR_Sandbox/")
-
 
 ##############################################################
 ############################# UI #############################
@@ -477,7 +469,7 @@ ui <- fluidPage(
                                                                  tags$b("Section Selections"),
                                                                  tags$br(),
                                                                  tags$ol(
-                                                                   tags$li(HTML("Click Tutorial to begin an interactive tutorial using <a href = 'http://shiny.rstudio.com/articles/js-introjs.html'> introJS </a>")),
+                                                                   tags$li(HTML("Click to get to this Help page.")),
                                                                    tags$li("Patient Finder can be used for cohort querying and basic plots and information. Select a certain patient for other sections"),
                                                                    tags$li("Requires a patient selected from #2. Interactive report of all clinical data generated as well as an automated clinical summary."),
                                                                    tags$li("Requires a patient selected from #2. Intearactive timeline plot of clinical encounters as well as frequency plots."),
@@ -586,19 +578,19 @@ ui <- fluidPage(
                                                         tags$hr(),
                                                         fluidRow( 
                                                           column(width=5,
-                                                                 tags$img(src = "images/Finder/finder7.png", height = '300px', width = '400px')),
+                                                                 tags$img(src = "images/Finder/finder7.png", height = '350px', width = '400px')),
                                                           column(width=7,
                                                                  tags$b("Criteria Search Cohort"),
                                                                  tags$br(),
                                                                  tags$ol(
-                                                                   tags$li("Can filter cohort below by any demographic feature (automatically adjusts table and plots; see below for more details)"),
-                                                                   tags$li("Table of all selected patients in cohort. Can be sorted by clicking on columns. Filtered based on Filter options above "),
+                                                                   tags$li("Table of all selected patients in cohort. Can filter cohort below by any demographic feature (automatically adjusts table and plots; see below for more details)"),
+                                                                   tags$li("Table can be sorted by clicking on columns and can show different amounts of entries per page. "),
+                                                                   tags$li("Table can be filtered by any demographic filter options by selecting subsets below column name."),
                                                                    tags$li("Lists number of patients in filtered cohort"),
                                                                    tags$li("Navigate the cohort table by these control buttons"),
-                                                                   tags$li("Reset Filters returns all filter options above to default"),
                                                                    tags$li("Can export/save cohort demographic table into a .csv file for utility in other programs."),
                                                                    tags$li("Show plots of demographic features for cohort. Dynamically changed based on filter options"),
-                                                                   tags$li("Other sections of the app require a patient to be selected. Clicking a patient in the table populates this field and enables searching.")
+                                                                   tags$li("Other sections of the app require a patient to be selected. Clicking on the seach button for patient in the row begins the search process.")
                                                                  )
                                                           )
                                                         ),
@@ -620,14 +612,14 @@ ui <- fluidPage(
                                                         tags$hr(),
                                                         fluidRow( 
                                                           column(width=5,
-                                                                 tags$img(src = "images/Finder/finder9.png", height = '250px', width = '400px')),
+                                                                 tags$img(src = "images/Finder/finder9.png", height = '150px', width = '400px')),
                                                           column(width=7,
                                                                  tags$b("Patient Search from Selected Cohort"),
                                                                  tags$br(),
                                                                  tags$ol(
-                                                                   tags$li("Filtering cohort subsets table below"),
-                                                                   tags$li("Select a patient of interest by clicking row on table"),
-                                                                   tags$li("Search for specific patient: retrieves all clinical and encounter data for selected patient for use in other sections")
+                                                                   tags$li("Filtering cohort subsets table below. In this example, 'Male' patients are selected only in addition to an age range."),
+                                                                   tags$li("The second row is our patient of interest"),
+                                                                   tags$li("Click on the Search button in the last column: retrieves all clinical and encounter data for selected patient for use in other sections")
                                                                     )
                                                           )
                                                         )
@@ -723,12 +715,238 @@ ui <- fluidPage(
                                                                    tags$li("All options here are from what is available for the selected patient based on his/her encounter history. Selecting from these list will add all encounters of these types to the timeline.")
                                                                  )
                                                             )
-                                                          )  
+                                                          ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Timeline/timeline3.png", width = '400px')),
+                                                          column(width=6,
+                                                                 tags$b("Timeline Options Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Inveractive timeline visualization of encounters for selected patient. Can scroll left and right, zoom in and out, and select items by clicking on them. Encounter items are described by their Visit Type text"),
+                                                                   tags$li("All Visit Types (e.g., Inpatient Visit) selected in the dropdown are included in the visualization plot"),
+                                                                   tags$li("All Admitting Concept Types (e.g., Inpatient Hospital) selected in the dropdown are included in the visualization plot"),
+                                                                   tags$li("All Discharge Concept Types (e.g., Home) selected in the dropdown are included in the visualization plot")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Timeline/timeline4.png", width = '400px')),
+                                                          column(width=6,
+                                                                 tags$b("Timeline Selections"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Buttons to automatically navigate timeline. Fit All Encounters will navigate the timeline to put all items on screen (note this can increase height of plot by a lot). Focus Past Year will focus the timeline to the previous year (e.g., 2017)."),
+                                                                   tags$li("All encounter items in the timeline can be selected. Here the third Outpatient Visit is selected for the current patient. Clicking on the timeline item populates information about the encounter below."),
+                                                                   tags$li("All information covered in the timeline for the encounter is displayed in the Encounter Information section"),
+                                                                   tags$li("All clinical data recorded during the encounter is contained within a table separated by tabs of each domain."),
+                                                                   tags$li("These tables contain pre-selected columns pertinent to the selected domain (e.g., 'Condition Status Type' for Condition) "),
+                                                                   tags$li("Clicking CSV or Excel buttons on each tab will allow for downloading the table in the affiliated format.")
+                                                                 )
+                                                          )
+                                                        )
                                                         )# end fluidPage
                                                       ), #end Timeline help tab
                                              tabPanel("Data Explorer",
-                                                      tags$br()
-                                                      ) #end Explorer help tab
+                                                      tags$br(),
+                                                      fluidPage(
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer1.png",width = '450px')),
+                                                          column(width=6,
+                                                                 tags$b("Main Explorer Screen"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("The Data Explorer section allows users to explore trends in categorical and numeric clinical data for a selected patient (in this case patient id 9000000). There are 3 ways in which to explore: i) Targeted: one modality at a time; ii) Multiplex: multiple modalities plotted along the same x-axis (i.e., time); and iii) Multiplex Timeline: multiple modalities plotted on a grouped timeline visualization. ")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer2.png", width = '650px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Categorical"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("The Targeted explorer option plots data based on clinical modality at a time (e.g. Conditions or Measurements). For all categorical data (Conditions, Devices, Medications, and Procedures), these are plotted as an interactive timeline. "),
+                                                                   tags$li("For the timeline there are two view types possible: Event will display each item as a single time point; Range will plot the item from start-to-end period if that information exists (note these are not always accurate) "),
+                                                                   tags$li("Users can select items of each modality from the dropdown to include in the plot. Only concepts recorded for the selected patient are available.")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer3.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Categorical"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Timeline visualization automatically produced containing elements selected in the dropdown list in #2. As with other timelines, this is completely interactive."),
+                                                                   tags$li("Only items from the dropdown list are included in the timeline. These items are populated directly from patient-speicific concepts.")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer4.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Categorical"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("If Range option View Type is selected, the concept items in the timeline are displayed based on a range if available "),
+                                                                   tags$li("For items without an end date, they are still displayed as an Event (or single time point)"),
+                                                                   tags$li("Items with a range (e.g., Ulcerative Colitis) are displayed as a bar across the time period")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer5.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Categorical"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("All items in the timeline can be selected by clicking"),
+                                                                   tags$li("Information pertaining to the selected concept are displayed")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer6.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Numeric"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Domains that contain numeric data, specifically Measurements and Observations (although the latter is a mix), are first displayed as a frequency table with the number of recorded events for each item."),
+                                                                   tags$li("Items in the frequency table can be selected by clicking to automatically produce a line plot")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer7.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Targeted Explorer: Numeric"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Select an item from the frequency table to view trends over time for that data concept ('C reactive protein [Mass/volume] in Serum or Plasma' selected in this case)"),
+                                                                   tags$li("An interactive line plot of all data points for the selected patients in the selected data concept is automatically produced"),
+                                                                   tags$li("High/Low values are automatically colored and coded based on the internal range system"),
+                                                                   tags$li("Hovering over each data point displays the value")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer8.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Explorer Mode"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Multiplex mode: display multiple types of data on the same time scale plot"),
+                                                                   tags$li("Categorical data can be selected in which items are displayed as a dot plot"),
+                                                                   tags$li("Numerical data can be selected in which terms are displayed as a line plot")
+                                                                   
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer9.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Explorer Mode Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Numeric data types (Measurements and Observations) can be selected based on what was measured for the selected patient"),
+                                                                   tags$li("Categorical data types (all others) can be selected in the same fashion")
+                                                                   
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer10.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Explorer Mode Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("The interactive multiplex plot is populated with selected items. Users can zoom in by clicking and dragging a section. All other items are then zoomed in at the same scale. Double clicking returns to original scale. Plots can be downloaded by hovering over the image and selecting 'Download plot as png'."),
+                                                                   tags$li("All items selected above are displayed in the legend. Categorical data are as dot plots on the top.")
+                                                                   
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer11.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Timeline Explorer Mode"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("In the Multiplex Timeline Explorer mode, multiple types of data are displayed on the same time scale in a timevis plot."),
+                                                                   tags$li("All data types can be selected and included based on data available from the selected patient")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer12.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Timeline Explorer Mode Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("Categorical data can be selected like before"),
+                                                                   tags$li("Numeric data can be selected as well like before")
+                                                                 )
+                                                          )
+                                                        ),
+                                                        tags$br(),
+                                                        tags$hr(),
+                                                        fluidRow( 
+                                                          column(width=6,
+                                                                 tags$img(src = "images/Explorer/explorer13.png", width = '425px')),
+                                                          column(width=6,
+                                                                 tags$b("Multiplex Timeline Explorer Mode Continued"),
+                                                                 tags$br(),
+                                                                 tags$ol(
+                                                                   tags$li("All selected items for the selected patient are displayed in a timevis plot grouped by domain. This is interactive with the same options available as before"),
+                                                                   tags$li("Data can be viewed as an Event or Range as before"),
+                                                                   tags$li("All data items can be selected by clicking"),
+                                                                   tags$li("Information for the selected data item are displayed above the plot")
+                                                                 )
+                                                          )
+                                                        )
+                                                        
+                                                      ) #end fluidPage
+                                             ) #end Explorer help tab
                                  ) #end help_pages Tabset panel
                                  ) #end Help section mainPanel
                                  ), #end Help section tab
@@ -941,10 +1159,10 @@ if (!interactive()) sink(stderr(), type = "output")
     
     ## load driver
     if (driver=="mysql") {
-      library("RMySQL")
+      suppressPackageStartupMessages(library("RMySQL"))
     } else if (driver %in% c("oracle", "postgresql", "redshift", "sql server", "pdw", "bigquery")) {
-      library("DatabaseConnector")
-      library("SqlRender")
+      suppressPackageStartupMessages(library("DatabaseConnector"))
+      suppressPackageStartupMessages(library("SqlRender"))
     }
   
     connection <- checkOMOPconnection(driver, username,password,host,dbname, port)
@@ -978,11 +1196,16 @@ if (!interactive()) sink(stderr(), type = "output")
         
     shinyjs::show("intro_help_panel")
 
-  withProgress(message = "Loading data...", min = 0, max = 2, value = 0, { 
+  withProgress(message = "Loading data...", min = 0, max = 3, value = 0, { 
     incProgress(1, detail = "Data Ontology...")
-
-    # check for RDS here // if exists message ****
-   dataOntology <<- make_data_ontology()
+   
+    if (file.exists(paste0(getOption("currentPath"), "dataOntology.rds")) ) {
+      incProgress(1, detail = "Data Ontology found. Loading from .rds file...")
+    } else { 
+      incProgress(1, detail = "Data Ontology not found. Creating from source...")
+      }
+    
+    dataOntology <<- make_data_ontology()
     
     incProgress(1, detail = "Patient demographics...")
     pts_demographics <<- getDemographics()
@@ -1080,7 +1303,6 @@ if (!interactive()) sink(stderr(), type = "output")
     pt_data_report$df = data.table()
     multiplex_timeline$df = data.table()
     
-    # reset option path (current path set)
     enable("sqlid")
     enable("sqlpass")
     enable("sqlhost")
@@ -1522,6 +1744,7 @@ if (!interactive()) sink(stderr(), type = "output")
      disable("criteria_select_none_button_finder")
      disable("search_func_type")
      disable("search_strategy")
+     disable("show_plots")
      patient_list <- findPatients(selected_terms, func_type, search_strat)
 
      if(length(patient_list)>0){
@@ -1551,6 +1774,7 @@ if (!interactive()) sink(stderr(), type = "output")
    enable("criteria_select_none_button_finder")
    enable("search_func_type")
    enable("search_strategy")
+   enable("show_plots")
 
 
   })
@@ -1603,6 +1827,7 @@ if (!interactive()) sink(stderr(), type = "output")
                actionButton("show_plots", "Show Plots")
         )
       ),
+      hr(),
       
       shinyjs::hidden(
         div(id="finder_plots",
@@ -1769,8 +1994,8 @@ enable_after_search <-function(){
     cohort_found = pts_demographics[person_id %in% pt_list_found]
     cohort_found = cohort_found[,-c("death_date")]
 
-    cohort_found$age = as.numeric(cohort_found$age)
-    cohort_found$year_of_birth = as.numeric(cohort_found$year_of_birth)
+    cohort_found$age = as.integer(cohort_found$age)
+    cohort_found$year_of_birth = as.integer(cohort_found$year_of_birth)
     cohort_found$Gender = as.factor(cohort_found$Gender)
     cohort_found$Race = as.factor(cohort_found$Race)
     cohort_found$Ethnicity = as.factor(cohort_found$Ethnicity)

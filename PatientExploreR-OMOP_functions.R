@@ -1,7 +1,6 @@
-library(RMySQL)
-library(data.table)
-library(DT)
-library(purrr)
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(DT))
+suppressPackageStartupMessages(library(purrr))
 
 # sets standard concepts for use with mapped vs. direct search options
 standard_concepts <- data.table("domain_type"= c("Measurement","Condition","Drug","Observation","Device","Procedure"),"concepts"= c("LOINC,SNOMED,CPT4","SNOMED","RxNorm,CPT4,NDC","SNOMED,CPT4,LOINC,HCPCS","SNOMED,HCPCS","SNOMED,CPT4,HCPCS"))
