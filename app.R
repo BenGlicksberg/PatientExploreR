@@ -979,12 +979,12 @@ ui <- fluidPage(
                                    tags$li("R"),
                                    tags$li("All required packages (see Install.R)"),
                                    tags$li("Database software (either: MySQL, PostgreSQL, Amazon Redshift, Microsoft SQL Server, Microsoft Parallel Data Warehouse, Google BigQuery"),
-                                   tags$li("Access to Electronic Health Record data (reccommended for use with a de-identified version) that is properly formatted to OMOP Common Data Model v5")
+                                   tags$li("Access to Electronic Health Record data (recommended for use with a de-identified version) that is properly formatted to OMOP Common Data Model v5")
                                  ),
                                  tags$h5("Installation"),
                                  tags$ol(
                                    tags$li("Download app from GitHub (see Source Files)"),
-                                   tags$li("Navigate to diretory and run Install.R (Rscript Install.R) to install all required packages"),
+                                   tags$li("Navigate to directory and run Install.R (Rscript Install.R) to install all required packages"),
                                    tags$li("(Optional) Create .Renviron file in directory with database credentials (Note: this can be done in the app itself). See section below for formatting this file."),
                                    tags$li("Open app using either Rstudio (Run App) or from command line: R -e \"shiny::runApp('PatientExploreR.R')\", then navigate to the IP address after \"Listening on…\" using a web browser.")
                                    ),
