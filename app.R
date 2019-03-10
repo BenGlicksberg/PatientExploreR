@@ -1044,7 +1044,7 @@ if (!interactive()) sink(stderr(), type = "output")
   ############################
   
   ### general query function ###
-  sqlQuery <- function(query) {
+  sqlQuery <<- function(query) {
     
     if (input$driver_picker=="MySQL") {
       
