@@ -80,7 +80,7 @@ checkOMOPtables <- function(driver, username, password, host, dbname, port) {
   
   if (driver=="mysql") {
     drv <- dbDriver("MySQL")
-     fullConnectString <- setConnectFunction(username, password, host, dbname, port)
+    fullConnectString <- setConnectFunction(username, password, host, dbname, port)
     con <- eval(parse(text = fullConnectString))
 
   } else {
@@ -100,8 +100,6 @@ checkOMOPtables <- function(driver, username, password, host, dbname, port) {
   } else {
     on.exit(DatabaseConnector::disconnect(con))
   }
-  
-  
   
   missingTables <- list()
   emptyTables <-list()

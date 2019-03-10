@@ -1047,7 +1047,7 @@ if (!interactive()) sink(stderr(), type = "output")
   ############################
   
   ### general query function ###
-  sqlQuery <- function(query) {
+  sqlQuery <<- function(query) {
     
     if (input$driver_picker=="MySQL") {
       
@@ -1170,6 +1170,7 @@ if (!interactive()) sink(stderr(), type = "output")
  if(connection==TRUE){ ### if connection can be made
       
       # check OMOP tables
+      
       tbls <- checkOMOPtables(driver, username,password,host,dbname, port)
       missingTables <- tbls$missingTables
       emptyTables <- tbls$emptyTables
