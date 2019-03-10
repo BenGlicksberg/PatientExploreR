@@ -87,9 +87,9 @@ ui <- fluidPage(
                                                    textInput(inputId="sqlport", label="Port", value = "", width = NULL, placeholder = "Port"),
                                                    
                                                   fluidRow(column(width=6,
-                                                                 actionButton(width = 150,
+                                                                 disabled(actionButton(width = 150,
                                                                               inputId = "save_credentials",
-                                                                              label = "Save Credentials")),
+                                                                              label = "Save Credentials"))),
                                                   column(width=6,
                                                          actionButton(width =150,
                                                                                inputId = "load_credentials",
@@ -97,7 +97,7 @@ ui <- fluidPage(
                                                   HTML("<br>"),
                                                   fluidRow(
                                                     column(width=12,
-                                                 directoryInput('directory', label = "", value = getOption("currentPath"))
+                                                 disabled(directoryInput('directory', label = "", value = getOption("currentPath")))
                                                  # credit: https://github.com/wleepang/shiny-directory-input
                                                     )
                                                   ),  
