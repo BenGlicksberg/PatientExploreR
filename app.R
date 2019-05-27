@@ -51,7 +51,7 @@ ui <- fluidPage(
                                 useShinyalert(),
                                 fluidPage(theme = shinytheme("paper"),
                                           fluidRow( # intro fluidRow
-                                                   tags$h3("PatientExploreR Sandbox Server"),
+                                                   tags$h3("PatientExploreR"),
                                                    tags$p("PatientExploreR interfaces with a relational database of EHR data in the Observational Medical Outcomes Partnership (OMOP) Common Data Model (CDM). This application produces patient-level interactive and dynamic reports and visualization of clinical data, without requiring programming skills.",align="left"),
                                                    tags$br(),
                                                    fluidRow(
