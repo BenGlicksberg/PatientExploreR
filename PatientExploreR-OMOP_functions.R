@@ -159,6 +159,8 @@ make_data_ontology <- function(){
     saveRDS(dataOntology, paste0(getOption("currentPath"), "dataOntology.rds")) # save Data Ontology
   }
   
+  return(dataOntology)
+  
 }
 
 
