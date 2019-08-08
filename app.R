@@ -1089,7 +1089,7 @@ if (!interactive()) sink(stderr(), type = "output")
       on.exit(DatabaseConnector::disconnect(con))
       
       # translate query using SqlRender
-      translated_query <- SqlRender::translateSql(query, targetDialect = drv)$sql
+      translated_query <- SqlRender::translate(query, targetDialect = drv)
       
       # query using DatabaseConnector function
       result <- DatabaseConnector::querySql(con, translated_query)
