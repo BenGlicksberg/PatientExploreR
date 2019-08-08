@@ -6,3 +6,6 @@
 dataOntology.rds
 www/.DS_Store
 www/images/.DS_Store
+.Renviron
+www/.DS_Store
+www/images/.DS_Store
