@@ -151,7 +151,7 @@ make_data_ontology <- function(){
     dataOntology = readRDS(paste0(getOption("currentPath"), "dataOntology.rds"))
   }else{
     # if not, create it, then save
-    conceptQuery <- "SELECT concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, concept_code FROM concept WHERE invalid_reason = '';"
+    conceptQuery <- "SELECT concept_id, concept_name, domain_id, vocabulary_id, concept_class_id, concept_code FROM concept WHERE (invalid_reason = '' OR invalid_reason IS NULL);"
     dataOntology <- sqlQuery(conceptQuery)
     dataOntology <- data.table(dataOntology)
     dataOntology$concept_name <- enc2utf8(dataOntology$concept_name)
