@@ -23,7 +23,7 @@ metathesaureses, such as the [Unified Medical Language System
 (UMLS)](https://www.nlm.nih.gov/research/umls/). Much of the underlying logic of the app for interfacing with OMOP data is adapted from our [ROMOP](https://github.com/BenGlicksberg/ROMOP) package (further description and details can be found in ROMOP's GitHub page). 
 
 ### Manuscript information:
-TBD
+Glicksberg BS, Oskotsky B, Thangaraj PM, Giangreco N, Badgeley MA, Johnson KW, Datta D, Rudrapatna VA, Rappoport N, Shervey MM, Miotto R. PatientExploreR: an extensible application for dynamic visualization of patient clinical history from electronic health records in the OMOP common data model. Bioinformatics. 2019 Nov 1;35(21):4515-8.
 
 ### Sandbox Server
 
@@ -47,7 +47,7 @@ Services (AWS) querying a MySQL database server (AWS Aurora MySQL).
 ### Example patient
 
 As the DE-SynPUF data does not contain patient measurement results, we
-generated a profile for a patient with Chron'€™s Disease with
+generated a profile for a patient with Chron'â‚¬â„¢s Disease with
 representative clinical data (e.g., disease codes and lab test results)
 for illustrative purposes. Users can recreate this example patient using
 the script contained in the "data/new_pt_insert_commands.txt" file. The script is formatted for
