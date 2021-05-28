@@ -1150,6 +1150,9 @@ if (!interactive()) sink(stderr(), type = "output")
     host <- input$sqlhost
     dbname <- input$sqldb
     driver <- tolower(input$driver_picker)
+    if (driver == "amazon redshift") {
+      driver <- "redshift"
+    }
     port <- input$sqlport
     
     # require dbname check
